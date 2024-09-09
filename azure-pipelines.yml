@@ -1,0 +1,36 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  # Define your variables here if needed (optional)
+  # ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_TENANT_ID, ARM_SUBSCRIPTION_ID are usually needed for Azure Authentication
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.x'
+      addToPath: true
+
+  # Install Terraform CLI
+  - task: TerraformInstaller@0
+    inputs:
+      terraformVersion: '1.5.0' # Replace with your Terraform version
+
+  # Step 1: Terraform Init (initialize Terraform backend)
+  - script: |
+      terraform init -input=false
+    displayName: 'Terraform Init'
+
+  # Step 2: Terraform Plan (preview changes)
+  - script: |
+      terraform plan -input=false -out=tfplan
+    displayName: 'Terraform Plan'
+
+  # Step 3: Terraform Apply (apply changes)
+  - script: |
+      terraform apply -input=false -auto-approve tfplan
+    displayName: 'Terraform Apply'
+
