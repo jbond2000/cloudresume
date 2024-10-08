@@ -95,8 +95,8 @@ resource "azurerm_application_insights_smart_detection_rule" "smart_detection" {
   name                = element(["degradationindependencyduration", "degradationinserverresponsetime", "digestMailConfiguration", "extension_billingdatavolumedailyspikeextension", "extension_canaryextension", "extension_exceptionchangeextension", "extension_memoryleakextension", "extension_securityextensionspackage", "extension_traceseveritydetector", "longdependencyduration", "migrationToAlertRulesCompleted", "slowpageloadtime", "slowserverresponsetime"], count.index)
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
-  application_insights_component_id = azurerm_application_insights.app_insights.id
+  application_insights_id = azurerm_application_insights.app_insights.id
 
   enabled                       = true
-  send_email_to_subscription_owners = true
+  send_emais_to_subscription_owners = true
 }
