@@ -50,7 +50,6 @@ resource "azurerm_storage_account" "storage_account" {
 
   # Supported argument names for Azure Storage Account:
   allow_nested_items_to_be_public  = false # Use this to restrict nested items from being public (older versions)
-  enable_https_traffic_only        = true  # Should work with supported AzureRM versions
   large_file_share_enabled         = true
   access_tier                      = "Hot"
 
