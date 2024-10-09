@@ -33,26 +33,6 @@ resource "azurerm_application_insights" "app_insights" {
   retention_in_days   = 90
 }
 
-# Create Action Group
-resource "azurerm_monitor_action_group" "action_group" {
-  name                = var.action_group_name
-  resource_group_name = azurerm_resource_group.rg.name
-  short_name          = "SmartDetect"
-  enabled             = true
-
-  arm_role_receiver {
-    role_id                  = "749f88d5-cbae-40b8-bcfc-e573ddc772fa"
-    name                     = "Monitoring Contributor"
-    use_common_alert_schema  = true
-  }
-
-  arm_role_receiver {
-    role_id                  = "43d0d8ad-25c7-4714-9337-8ba259a9fe05"
-    name                     = "Monitoring Reader"
-    use_common_alert_schema  = true
-  }
-}
-
 # Create Storage Account
 resource "azurerm_storage_account" "storage_account" {
   name                     = var.storage_account_name
