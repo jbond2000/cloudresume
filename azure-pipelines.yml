@@ -7,10 +7,15 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
+
+
 variables:
   # Define your variables here if needed (optional)
   # ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_TENANT_ID, ARM_SUBSCRIPTION_ID are usually needed for Azure Authentication
   ARM_SUBSCRIPTION_ID: 'a67fa08c-8a71-4843-a6e9-1fbd1d8198b6'
+  ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+  ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+  ARM_TENANT_ID: $(ARM_TENANT_ID)
 
 steps:
   - task: UsePythonVersion@0
