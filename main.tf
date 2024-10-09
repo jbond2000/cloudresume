@@ -1,7 +1,7 @@
 provider "azurerm" {
   features {}
 
-    # Add the service principal authentication details here
+  # Add the service principal authentication details here
   client_id       = var.client_id
   client_secret   = var.client_secret
   tenant_id       = var.tenant_id
@@ -21,9 +21,6 @@ resource "azurerm_application_insights" "app_insights" {
   resource_group_name = azurerm_resource_group.rg.name
   application_type    = "web"
   retention_in_days   = 90
-
-  # Remove log_analytics_workspace_id as it is not a supported argument
-  # Use a separate `azurerm_monitor_diagnostic_setting` to link to Log Analytics if needed
 }
 
 # Create Action Group
@@ -54,12 +51,9 @@ resource "azurerm_storage_account" "storage_account" {
   account_tier             = "Standard"
   account_replication_type = "LRS"
 
-  # Supported argument names for Azure Storage Account:
-  allow_nested_items_to_be_public  = false # Use this to restrict nested items from being public (older versions)
+  allow_nested_items_to_be_public  = false
   large_file_share_enabled         = true
   access_tier                      = "Hot"
-
-  # Note: Remove allow_blob_public_access or update the AzureRM provider to version 2.56.0 or higher
   min_tls_version                  = "TLS1_2"
 }
 
@@ -99,12 +93,12 @@ resource "azurerm_function_app" "function_app" {
   }
 }
 
-# Create Proactive Detection Configurations
+# Create Proactive Detection Configurations for Application Insights
 resource "azurerm_application_insights_smart_detection_rule" "smart_detection" {
-  count                    = length(["degradationindependencyduration", "degradationinserverresponsetime", "digestMailConfiguration", "extension_billingdatavolumedailyspikeextension", "extension_canaryextension", "extension_exceptionchangeextension", "extension_memoryleakextension", "extension_securityextensionspackage", "extension_traceseveritydetector", "longdependencyduration", "migrationToAlertRulesCompleted", "slowpageloadtime", "slowserverresponsetime"])
-  name                     = element(["degradationindependencyduration", "degradationinserverresponsetime", "digestMailConfiguration", "extension_billingdatavolumedailyspikeextension", "extension_canaryextension", "extension_exceptionchangeextension", "extension_memoryleakextension", "extension_securityextensionspackage", "extension_traceseveritydetector", "longdependencyduration", "migrationToAlertRulesCompleted", "slowpageloadtime", "slowserverresponsetime"], count.index)
-  application_insights_id  = azurerm_application_insights.app_insights.id
-  enabled                  = true
+  count                        = length(["Slow page load time", "Slow server response time", "Long dependency duration", "Degradation in server response time", "Degradation in dependency duration", "Degradation in trace severity ratio", "Abnormal rise in exception volume", "Potential memory leak detected", "Potential security issue detected", "Abnormal rise in daily data volume"])
+  name                         = element(["Slow page load time", "Slow server response time", "Long dependency duration", "Degradation in server response time", "Degradation in dependency duration", "Degradation in trace severity ratio", "Abnormal rise in exception volume", "Potential memory leak detected", "Potential security issue detected", "Abnormal rise in daily data volume"], count.index)
+  application_insights_id      = azurerm_application_insights.app_insights.id
+  enabled                      = true
 
   # Corrected argument for email subscription owners
   send_emails_to_subscription_owners = true
