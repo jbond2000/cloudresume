@@ -45,7 +45,7 @@ variable "storage_account_name" {
 
 variable "tstorage_account_name" {
   type = string
-  default = "tstorage"
+  default = "tstorage0101"
 }
 
 variable "app_insights_name" {
@@ -75,7 +75,7 @@ variable "action_group_name" {
 variable "workspace_resource_id" {
   description = "The Resource ID of the Log Analytics workspace"
   type        = string
-  default     = "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/DefaultResourceGroup-SUK/providers/Microsoft.OperationalInsights/workspaces/DefaultWorkspace-a67fa08c-8a71-4843-a6e9-1fbd1d8198b6-SUK"
+  default     = "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/DefaultResourceGroup-SUK/providers/Microsoft.OperationalInsights/workspaces/3d6f5dc6-0931-4a50-be72-b9931746b763"
 }
 
 variable "function_app_settings" {
