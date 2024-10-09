@@ -73,7 +73,7 @@ resource "azurerm_app_service_plan" "app_service_plan" {
   }
 }
 
-# Create Function App
+# Create Function App with your desired settings
 resource "azurerm_function_app" "function_app" {
   name                       = var.function_app_name
   resource_group_name        = azurerm_resource_group.rg.name
@@ -85,10 +85,21 @@ resource "azurerm_function_app" "function_app" {
   version                    = "~4"
   https_only                 = true
 
+  site_config {
+    linux_fx_version = "node|14"  # Set Node.js runtime version, adjust if needed
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
   app_settings = merge(var.function_app_settings, {
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.app_insights.connection_string,
-    "APPINSIGHTS_INSTRUMENTATIONKEY"        = azurerm_application_insights.app_insights.instrumentation_key
+    "APPINSIGHTS_INSTRUMENTATIONKEY"        = azurerm_application_insights.app_insights.instrumentation_key,
+    "AzureWebJobsStorage"                   = azurerm_storage_account.storage_account.primary_connection_string,
+    "FUNCTIONS_WORKER_RUNTIME"              = "node"  # Specify the Functions runtime
   })
+}
 
   identity {
     type = "SystemAssigned"
