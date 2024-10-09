@@ -23,7 +23,7 @@ jobs:
     az login --service-principal -u $(ARM_CLIENT_ID) -p $(ARM_CLIENT_SECRET) --tenant $(ARM_TENANT_ID)
     az account set --subscription $(ARM_SUBSCRIPTION_ID)
 
-  - script: |
+- script: |
       # Clean up any previous Terraform initialization to avoid conflicts
       rm -rf .terraform
       rm -f terraform.tfstate
