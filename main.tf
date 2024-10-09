@@ -67,7 +67,7 @@ resource "azurerm_storage_account" "storage_account" {
   min_tls_version                  = "TLS1_2"
 }
 
-resource "azurerm_storage_account" "storage_account"{
+resource "azurerm_storage_account" "test_storage_account"{
   name = var.test_storage_account_name
   resource_group_name = azurerm
   account_tier             = "Standard"
