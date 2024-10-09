@@ -33,11 +33,12 @@ jobs:
       terraform init -reconfigure
   displayName: 'Terraform Init with Reconfigure'
 
-      # Define resource variables
+  - script: |
+      # Define resource variables inside the script block
       RESOURCE_GROUP_NAME="cloudresume"
       STORAGE_ACCOUNT_NAME="jbondcv"
       ACTION_GROUP_NAME="Application Insights Smart Detection"
-      APP_SERVICE_PLAN_NAME="ASP-cloudresume-baaa"
+      APP_SERVICE_PLAN_NAME="ASP-cloudresume-baaa
 
       # Import the Resource Group if it exists in Azure but not in Terraform
       RG_ID=$(az group show --name "cloudresume" --query id -o tsv 2>/dev/null)
