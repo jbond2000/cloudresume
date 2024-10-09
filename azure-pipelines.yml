@@ -10,10 +10,10 @@ pool:
 # You can remove this if they are correctly configured as pipeline variables
 variables:
   # Replace these with actual values or remove if using Azure DevOps variable group
-  ARM_CLIENT_ID: "your-client-id"   # Replace with actual client ID
-  ARM_CLIENT_SECRET: "your-client-secret"  # Replace with actual client secret
-  ARM_TENANT_ID: "your-tenant-id"   # Replace with actual tenant ID
-  ARM_SUBSCRIPTION_ID: "your-subscription-id"  # Replace with actual subscription ID
+  ARM_CLIENT_ID: "d0abc8bf-92b5-4b7a-ae04-6a0625e55d36"   # Replace with actual client ID
+  ARM_CLIENT_SECRET: "eez8Q~wHBDUCc0LvFPo2lpFvfZQFPQcwuuTfyaR_"  # Replace with actual client secret
+  ARM_TENANT_ID: "ca249364-2247-4916-be5f-6878448ff851"   # Replace with actual tenant ID
+  ARM_SUBSCRIPTION_ID: "a67fa08c-8a71-4843-a6e9-1fbd1d8198b6"  # Replace with actual subscription ID
 
 jobs:
 - job: terraform
