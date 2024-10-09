@@ -14,43 +14,60 @@ variables:
 
 jobs:
 - job: terraform
-  displayName: 'Terraform Import, Plan, and Apply'
+  displayName: 'Terraform Dynamic Import, Plan, and Apply'
   steps:
   - checkout: self
 
   - script: |
+      # Log in to Azure CLI
+      az login --service-principal -u $(ARM_CLIENT_ID) -p $(ARM_CLIENT_SECRET) --tenant $(ARM_TENANT_ID)
+      az account set --subscription $(ARM_SUBSCRIPTION_ID)
+
+      # Initialize Terraform
       terraform init
-    displayName: 'Terraform Init'
 
-  - script: |
-      # Import the Resource Group if it is not yet managed by Terraform
-      if ! terraform state show azurerm_resource_group.rg > /dev/null 2>&1; then
-        terraform import azurerm_resource_group.rg "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume"
+      # Define resource variables
+      RESOURCE_GROUP_NAME="cloudresume"
+      STORAGE_ACCOUNT_NAME="jbondcv"
+      ACTION_GROUP_NAME="Application Insights Smart Detection"
+      APP_SERVICE_PLAN_NAME="ASP-cloudresume-baaa"
+
+      # Import Resource Group if it exists in Azure but not in Terraform
+      RG_ID=$(az group show --name $RESOURCE_GROUP_NAME --query id -o tsv 2>/dev/null)
+      if [ -n "$RG_ID" ] && ! terraform state show azurerm_resource_group.rg > /dev/null 2>&1; then
+        echo "Importing existing Resource Group: $RESOURCE_GROUP_NAME"
+        terraform import azurerm_resource_group.rg "$RG_ID"
       else
-        echo "Resource Group already managed by Terraform."
+        echo "Resource Group already managed by Terraform or does not exist in Azure."
       fi
 
-      # Import the Action Group if it is not yet managed by Terraform
-      if ! terraform state show azurerm_monitor_action_group.action_group > /dev/null 2>&1; then
-        terraform import azurerm_monitor_action_group.action_group "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume/providers/Microsoft.Insights/actionGroups/Application Insights Smart Detection"
+      # Import Storage Account if it exists in Azure but not in Terraform
+      STORAGE_ID=$(az storage account show --name $STORAGE_ACCOUNT_NAME --resource-group $RESOURCE_GROUP_NAME --query id -o tsv 2>/dev/null)
+      if [ -n "$STORAGE_ID" ] && ! terraform state show azurerm_storage_account.storage_account > /dev/null 2>&1; then
+        echo "Importing existing Storage Account: $STORAGE_ACCOUNT_NAME"
+        terraform import azurerm_storage_account.storage_account "$STORAGE_ID"
       else
-        echo "Action Group already managed by Terraform."
+        echo "Storage Account already managed by Terraform or does not exist in Azure."
       fi
 
-      # Import the Storage Account if it is not yet managed by Terraform
-      if ! terraform state show azurerm_storage_account.storage_account > /dev/null 2>&1; then
-        terraform import azurerm_storage_account.storage_account "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume/providers/Microsoft.Storage/storageAccounts/jbondcv"
+      # Import Action Group if it exists in Azure but not in Terraform
+      ACTION_GROUP_ID=$(az monitor action-group show --name "$ACTION_GROUP_NAME" --resource-group $RESOURCE_GROUP_NAME --query id -o tsv 2>/dev/null)
+      if [ -n "$ACTION_GROUP_ID" ] && ! terraform state show azurerm_monitor_action_group.action_group > /dev/null 2>&1; then
+        echo "Importing existing Action Group: $ACTION_GROUP_NAME"
+        terraform import azurerm_monitor_action_group.action_group "$ACTION_GROUP_ID"
       else
-        echo "Storage Account already managed by Terraform."
+        echo "Action Group already managed by Terraform or does not exist in Azure."
       fi
 
-      # Import the App Service Plan if it is not yet managed by Terraform
-      if ! terraform state show azurerm_app_service_plan.app_service_plan > /dev/null 2>&1; then
-        terraform import azurerm_app_service_plan.app_service_plan "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume/providers/Microsoft.Web/serverFarms/ASP-cloudresume-baaa"
+      # Import App Service Plan if it exists in Azure but not in Terraform
+      APP_SERVICE_PLAN_ID=$(az appservice plan show --name $APP_SERVICE_PLAN_NAME --resource-group $RESOURCE_GROUP_NAME --query id -o tsv 2>/dev/null)
+      if [ -n "$APP_SERVICE_PLAN_ID" ] && ! terraform state show azurerm_app_service_plan.app_service_plan > /dev/null 2>&1; then
+        echo "Importing existing App Service Plan: $APP_SERVICE_PLAN_NAME"
+        terraform import azurerm_app_service_plan.app_service_plan "$APP_SERVICE_PLAN_ID"
       else
-        echo "App Service Plan already managed by Terraform."
+        echo "App Service Plan already managed by Terraform or does not exist in Azure."
       fi
-    displayName: 'Terraform Import Resources'
+    displayName: 'Terraform Import Resources Dynamically'
 
   - script: |
       terraform plan -out=tfplan
