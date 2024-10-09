@@ -62,5 +62,4 @@ jobs:
      else
        echo "Function App already managed by Terraform or does not exist in Azure."
      fi
-  displayName: 'Import Existing Function App'
 
