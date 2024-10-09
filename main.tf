@@ -85,32 +85,3 @@ resource "azurerm_app_service_custom_hostname_binding" "hostname_binding" {
   app_service_name    = azurerm_function_app.function_app.name
   resource_group_name = azurerm_resource_group.rg.name
 }
-
-# Disable FTP and SCM Access
-resource "azurerm_app_service_basic_auth" "basic_auth_ftp" {
-  name                = "${var.function_app_name}/ftp"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = var.location
-
-  properties = {
-    "allow" = false
-  }
-
-  depends_on = [
-    azurerm_function_app.function_app
-  ]
-}
-
-resource "azurerm_app_service_basic_auth" "basic_auth_scm" {
-  name                = "${var.function_app_name}/scm"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = var.location
-
-  properties = {
-    "allow" = false
-  }
-
-  depends_on = [
-    azurerm_function_app.function_app
-  ]
-}
