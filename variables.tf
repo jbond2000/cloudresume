@@ -64,7 +64,7 @@ variable "app_service_plan_name" {
 variable "action_group_name" {
   description = "The name of the action group for Application Insights"
   type        = string
-  default     = "Application Insights Smart Detection"
+  default     = "/subscriptions/A67FA08C-8A71-4843-A6E9-1FBD1D8198B6/resourceGroups/cloudresume/providers/Microsoft.Insights/actionGroups/Application Insights Smart Detection"
 }
 
 variable "workspace_resource_id" {
