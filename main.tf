@@ -86,7 +86,7 @@ resource "azurerm_function_app" "function_app" {
   https_only                 = true
 
   site_config {
-    linux_fx_version = "node|14"  # Set Node.js runtime version, adjust if needed
+    linux_fx_version = "Node|14"  # Set Node.js runtime version, adjust if needed
   }
 
   identity {
