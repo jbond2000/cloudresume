@@ -23,9 +23,34 @@ jobs:
     displayName: 'Terraform Init'
 
   - script: |
-      # Import the existing resource into the Terraform state
-      terraform import azurerm_resource_group.rg /subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume
-    displayName: 'Terraform Import Resource Group'
+      # Import the Resource Group if it is not yet managed by Terraform
+      if ! terraform state show azurerm_resource_group.rg > /dev/null 2>&1; then
+        terraform import azurerm_resource_group.rg "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume"
+      else
+        echo "Resource Group already managed by Terraform."
+      fi
+
+      # Import the Action Group if it is not yet managed by Terraform
+      if ! terraform state show azurerm_monitor_action_group.action_group > /dev/null 2>&1; then
+        terraform import azurerm_monitor_action_group.action_group "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume/providers/Microsoft.Insights/actionGroups/Application Insights Smart Detection"
+      else
+        echo "Action Group already managed by Terraform."
+      fi
+
+      # Import the Storage Account if it is not yet managed by Terraform
+      if ! terraform state show azurerm_storage_account.storage_account > /dev/null 2>&1; then
+        terraform import azurerm_storage_account.storage_account "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume/providers/Microsoft.Storage/storageAccounts/jbondcv"
+      else
+        echo "Storage Account already managed by Terraform."
+      fi
+
+      # Import the App Service Plan if it is not yet managed by Terraform
+      if ! terraform state show azurerm_app_service_plan.app_service_plan > /dev/null 2>&1; then
+        terraform import azurerm_app_service_plan.app_service_plan "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume/providers/Microsoft.Web/serverFarms/ASP-cloudresume-baaa"
+      else
+        echo "App Service Plan already managed by Terraform."
+      fi
+    displayName: 'Terraform Import Resources'
 
   - script: |
       terraform plan -out=tfplan
