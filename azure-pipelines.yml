@@ -52,3 +52,15 @@ jobs:
       ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
       ARM_TENANT_ID: $(ARM_TENANT_ID)
       ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+
+  - script: |
+     # Import Function App if it exists in Azure but not in Terraform
+     FUNCTION_APP_ID="/subscriptions/$ARM_SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP_NAME/providers/Microsoft.Web/sites/$FUNCTION_APP_NAME"
+     if [ -n "$FUNCTION_APP_ID" ] && ! terraform state show azurerm_function_app.function_app > /dev/null 2>&1; then
+       echo "Importing existing Function App: $FUNCTION_APP_NAME"
+       terraform import azurerm_function_app.function_app "$FUNCTION_APP_ID"
+     else
+       echo "Function App already managed by Terraform or does not exist in Azure."
+     fi
+  displayName: 'Import Existing Function App'
+
