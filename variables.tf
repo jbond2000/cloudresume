@@ -45,7 +45,7 @@ variable "storage_account_name" {
 
 variable "tstorage_account_name" {
   type = string
-  default = "test_storage_account"
+  default = "tstorage"
 }
 
 variable "app_insights_name" {
