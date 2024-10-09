@@ -8,6 +8,16 @@ provider "azurerm" {
   subscription_id = var.subscription_id
 }
 
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "tfstate-rg"
+    storage_account_name = "tfstatestorage"
+    container_name       = "tfstate"
+    key                  = "terraform.tfstate"
+  }
+}
+
+
 # Create Resource Group
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
