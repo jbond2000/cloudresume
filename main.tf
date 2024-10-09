@@ -24,6 +24,18 @@ resource "azurerm_resource_group" "rg" {
   location = var.location
 }
 
+# Application Insights Resource
+resource "azurerm_application_insights" "app_insights" {
+  name                = var.app_insights_name
+  location            = var.location
+  resource_group_name = azurerm_resource_group.rg.name
+  application_type    = "web"
+  retention_in_days   = 90
+
+  # Remove or comment out workspace_id if already imported and no changes required
+  # workspace_id = var.workspace_resource_id
+}
+
 # Create Storage Account
 resource "azurerm_storage_account" "storage_account" {
   name                     = var.storage_account_name
