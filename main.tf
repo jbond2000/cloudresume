@@ -104,7 +104,6 @@ resource "azurerm_function_app" "function_app" {
   identity {
     type = "SystemAssigned"
   }
-}
 
 # Create Proactive Detection Configurations for Application Insights
 resource "azurerm_application_insights_smart_detection_rule" "smart_detection" {
