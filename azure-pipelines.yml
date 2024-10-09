@@ -14,6 +14,7 @@ variables:
   ARM_CLIENT_SECRET: "eez8Q~wHBDUCc0LvFPo2lpFvfZQFPQcwuuTfyaR_"  # Replace with actual client secret
   ARM_TENANT_ID: "ca249364-2247-4916-be5f-6878448ff851"   # Replace with actual tenant ID
   ARM_SUBSCRIPTION_ID: "a67fa08c-8a71-4843-a6e9-1fbd1d8198b6"  # Replace with actual subscription ID
+  ACTION_GROUP_ID: "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume/providers/Microsoft.Insights/actionGroups/Application Insights Smart Detection"
 
 jobs:
 - job: terraform
