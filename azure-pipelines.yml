@@ -11,6 +11,8 @@ variables:
   ARM_CLIENT_SECRET: "eez8Q~wHBDUCc0LvFPo2lpFvfZQFPQcwuuTfyaR_"  # Replace with actual client secret
   ARM_TENANT_ID: "ca249364-2247-4916-be5f-6878448ff851"   # Replace with actual tenant ID
   ARM_SUBSCRIPTION_ID: "a67fa08c-8a71-4843-a6e9-1fbd1d8198b6"  # Replace with actual subscription ID
+  RESOURCE_GROUP_NAME: "cloudresume"                      # Add resource group variable
+  FUNCTION_APP_NAME: "jbondcounter"                       # Add function app name variable
 
 jobs:
 - job: terraform
@@ -34,6 +36,26 @@ jobs:
       ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
   - script: |
+      # Define resource variables inside the script block
+      FUNCTION_APP_ID="/subscriptions/$(ARM_SUBSCRIPTION_ID)/resourceGroups/$(RESOURCE_GROUP_NAME)/providers/Microsoft.Web/sites/$(FUNCTION_APP_NAME)"
+
+      # Import Function App if it exists in Azure but not in Terraform
+      if [ -n "$FUNCTION_APP_ID" ] && ! terraform state show azurerm_function_app.function_app > /dev/null 2>&1; then
+        echo "Importing existing Function App: $FUNCTION_APP_NAME"
+        terraform import azurerm_function_app.function_app "$FUNCTION_APP_ID"
+      else
+        echo "Function App already managed by Terraform or does not exist in Azure."
+      fi
+    displayName: 'Import Existing Function App'
+    env:
+      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      ARM_TENANT_ID: $(ARM_TENANT_ID)
+      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+      RESOURCE_GROUP_NAME: $(RESOURCE_GROUP_NAME)
+      FUNCTION_APP_NAME: $(FUNCTION_APP_NAME)
+
+  - script: |
       # Generate and save the Terraform plan to a file
       terraform plan -out=tfplan
     displayName: 'Terraform Plan'
@@ -52,14 +74,3 @@ jobs:
       ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
       ARM_TENANT_ID: $(ARM_TENANT_ID)
       ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-
-  - script: |
-     # Import Function App if it exists in Azure but not in Terraform
-     FUNCTION_APP_ID="/subscriptions/$ARM_SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP_NAME/providers/Microsoft.Web/sites/$FUNCTION_APP_NAME"
-     if [ -n "$FUNCTION_APP_ID" ] && ! terraform state show azurerm_function_app.function_app > /dev/null 2>&1; then
-       echo "Importing existing Function App: $FUNCTION_APP_NAME"
-       terraform import azurerm_function_app.function_app "$FUNCTION_APP_ID"
-     else
-       echo "Function App already managed by Terraform or does not exist in Azure."
-     fi
-
