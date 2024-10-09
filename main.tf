@@ -101,10 +101,6 @@ resource "azurerm_function_app" "function_app" {
   })
 }
 
-  identity {
-    type = "SystemAssigned"
-  }
-
 # Create Proactive Detection Configurations for Application Insights
 resource "azurerm_application_insights_smart_detection_rule" "smart_detection" {
   count                        = length(["Slow page load time", "Slow server response time", "Long dependency duration", "Degradation in server response time", "Degradation in dependency duration", "Degradation in trace severity ratio", "Abnormal rise in exception volume", "Potential memory leak detected", "Potential security issue detected", "Abnormal rise in daily data volume"])
