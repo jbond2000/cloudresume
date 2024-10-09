@@ -23,8 +23,15 @@ jobs:
       az login --service-principal -u $(ARM_CLIENT_ID) -p $(ARM_CLIENT_SECRET) --tenant $(ARM_TENANT_ID)
       az account set --subscription $(ARM_SUBSCRIPTION_ID)
 
-      # Initialize Terraform
-      terraform init
+    - script: |
+      # Clean up any previous Terraform initialization to avoid conflicts
+      rm -rf .terraform
+      rm -f terraform.tfstate
+      rm -f terraform.tfstate.backup
+
+      # Initialize Terraform with reconfiguration to ensure the backend is properly set up
+      terraform init -reconfigure
+    displayName: 'Terraform Init with Reconfigure'
 
       # Define resource variables
       RESOURCE_GROUP_NAME="cloudresume"
