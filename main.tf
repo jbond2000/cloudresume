@@ -54,9 +54,28 @@ resource "azurerm_function_app" "function_app" {
   https_only                 = true
 
   site_config {
-    linux_fx_version = var.site_config["linuxFxVersion"]
-    always_on        = var.site_config["alwaysOn"]
-    http20_enabled   = var.site_config["http20Enabled"]
+    linux_fx_version = var.site_config_settings["linuxFxVersion"]
+    always_on        = false
+    http20_enabled   = false
+
+    cors {
+      allowed_origins     = var.cors_allowed_origins
+      support_credentials = var.cors_support_credentials
+    }
+
+    ip_restrictions = [
+      {
+        name        = "Allow all"
+        ip_address  = "Any"
+        action      = "Allow"
+        priority    = 2147483647
+        description = "Allow all access"
+      }
+    ]
+
+    ftps_state        = var.site_config_settings["ftpsState"]
+    min_tls_version   = var.site_config_settings["minTlsVersion"]
+    scm_min_tls_version = var.site_config_settings["scmMinTlsVersion"]
   }
 
   identity {
@@ -66,7 +85,7 @@ resource "azurerm_function_app" "function_app" {
   app_settings = merge(var.function_app_settings, {
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.app_insights.connection_string,
   })
-  
+
   tags = {
     "hidden-link: /app-insights-resource-id" = azurerm_application_insights.app_insights.id
   }

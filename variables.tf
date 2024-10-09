@@ -62,7 +62,7 @@ variable "app_insights_name" {
 
 variable "function_app_settings" {
   description = "Configuration settings for the Azure Function App"
-  type        = map(any)
+  type        = map(string)
   default = {
     "FUNCTIONS_WORKER_RUNTIME"              = "node",
     "WEBSITE_NODE_DEFAULT_VERSION"          = "20",
@@ -72,24 +72,27 @@ variable "function_app_settings" {
   }
 }
 
-variable "site_config" {
-  description = "Additional site configuration settings"
-  type        = map(any)
+variable "site_config_settings" {
+  description = "Site configuration settings for the Function App"
+  type        = map(string)
   default = {
-    "numberOfWorkers"                  = 1,
     "linuxFxVersion"                   = "Node|20",
-    "alwaysOn"                         = false,
-    "http20Enabled"                    = false,
-    "functionAppScaleLimit"            = 200,
-    "minimumElasticInstanceCount"      = 0,
-    "use32BitWorkerProcess"            = false,
-    "webSocketsEnabled"                = false,
-    "cors.allowedOrigins"              = ["https://portal.azure.com"],
-    "cors.supportCredentials"          = false,
     "minTlsVersion"                    = "1.2",
     "scmMinTlsVersion"                 = "1.2",
     "ftpsState"                        = "FtpsOnly",
     "publicNetworkAccess"              = "Enabled",
-    "scmIpSecurityRestrictionsUseMain" = false,
+    "scmIpSecurityRestrictionsUseMain" = "false",
   }
+}
+
+variable "cors_allowed_origins" {
+  description = "CORS allowed origins"
+  type        = list(string)
+  default     = ["https://portal.azure.com"]
+}
+
+variable "cors_support_credentials" {
+  description = "CORS support credentials"
+  type        = bool
+  default     = false
 }
