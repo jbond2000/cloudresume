@@ -7,16 +7,18 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  ARM_CLIENT_ID: "d0abc8bf-92b5-4b7a-ae04-6a0625e55d36"   # Replace with actual client ID
+  ARM_CLIENT_ID: "d0abc8bf-92b5-4b7a-ae04-6a0625e55d36"    # Replace with actual client ID
   ARM_CLIENT_SECRET: "eez8Q~wHBDUCc0LvFPo2lpFvfZQFPQcwuuTfyaR_"  # Replace with actual client secret
-  ARM_TENANT_ID: "ca249364-2247-4916-be5f-6878448ff851"   # Replace with actual tenant ID
+  ARM_TENANT_ID: "ca249364-2247-4916-be5f-6878448ff851"    # Replace with actual tenant ID
   ARM_SUBSCRIPTION_ID: "a67fa08c-8a71-4843-a6e9-1fbd1d8198b6"  # Replace with actual subscription ID
-  RESOURCE_GROUP_NAME: "cloudresume"                      # Add resource group variable
-  FUNCTION_APP_NAME: "jbondcounter"                       # Add function app name variable
+  RESOURCE_GROUP_NAME: "cloudresume"                        # Add resource group variable
+  FUNCTION_APP_NAME: "counter1"                             # Add function app name variable
+  APPLICATION_INSIGHTS_ID: "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume/providers/Microsoft.Insights/components/counter1"
+  APP_SERVICE_PLAN_ID: "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume/providers/Microsoft.Web/serverfarms/ASP-cloudresume-9bed"
 
 jobs:
 - job: terraform
-  displayName: 'Terraform Plan and Apply'
+  displayName: 'Terraform Import, Plan, and Apply'
   steps:
   - checkout: self
 
@@ -29,6 +31,22 @@ jobs:
       # Initialize Terraform with reconfiguration to ensure the backend is properly set up
       terraform init -reconfigure
     displayName: 'Terraform Init with Reconfigure'
+    env:
+      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      ARM_TENANT_ID: $(ARM_TENANT_ID)
+      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+
+  - script: |
+      # Import the Application Insights resource into Terraform state
+      terraform import azurerm_application_insights.app_insights "$(APPLICATION_INSIGHTS_ID)" || echo "Application Insights already managed by Terraform or does not exist in Azure."
+
+      # Import the App Service Plan resource into Terraform state
+      terraform import azurerm_app_service_plan.app_service_plan "$(APP_SERVICE_PLAN_ID)" || echo "App Service Plan already managed by Terraform or does not exist in Azure."
+
+      # Import the Function App resource into Terraform state
+      terraform import azurerm_function_app.function_app "/subscriptions/$(ARM_SUBSCRIPTION_ID)/resourceGroups/$(RESOURCE_GROUP_NAME)/providers/Microsoft.Web/sites/$(FUNCTION_APP_NAME)" || echo "Function App already managed by Terraform or does not exist in Azure."
+    displayName: 'Terraform Import Resources'
     env:
       ARM_CLIENT_ID: $(ARM_CLIENT_ID)
       ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
