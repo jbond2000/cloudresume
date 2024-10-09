@@ -69,6 +69,17 @@ jobs:
       fi
     displayName: 'Terraform Import Resources Dynamically'
 
+  
+  - script: |
+      # Import Resource Group if not already imported
+      terraform import azurerm_resource_group.rg "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume" || echo "Resource already imported or error during import"
+    displayName: 'Import Resource Group into Terraform'
+
+  - script: |
+      # List the current state to confirm import
+      terraform state list
+    displayName: 'List Terraform State'
+
   - script: |
       terraform plan -out=tfplan
     displayName: 'Terraform Plan'
