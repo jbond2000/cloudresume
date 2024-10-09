@@ -1,45 +1,36 @@
 trigger:
   branches:
     include:
-      - '*'
-
+      - main
 
 pool:
   vmImage: 'ubuntu-latest'
 
-
-
 variables:
-  # Define your variables here if needed (optional)
-  # ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_TENANT_ID, ARM_SUBSCRIPTION_ID are usually needed for Azure Authentication
-  ARM_SUBSCRIPTION_ID: 'a67fa08c-8a71-4843-a6e9-1fbd1d8198b6'
   ARM_CLIENT_ID: $(ARM_CLIENT_ID)
   ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
   ARM_TENANT_ID: $(ARM_TENANT_ID)
+  ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
-steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.x'
-      addToPath: true
+jobs:
+- job: terraform
+  displayName: 'Terraform Import, Plan, and Apply'
+  steps:
+  - checkout: self
 
-  # Install Terraform CLI
-  - task: TerraformInstaller@0
-    inputs:
-      terraformVersion: '1.5.0' # Replace with your Terraform version
-
-  # Step 1: Terraform Init (initialize Terraform backend)
   - script: |
-      terraform init -input=false
+      terraform init
     displayName: 'Terraform Init'
 
-  # Step 2: Terraform Plan (preview changes)
   - script: |
-      terraform plan -input=false -out=tfplan
+      # Import the existing resource into the Terraform state
+      terraform import azurerm_resource_group.rg /subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume
+    displayName: 'Terraform Import Resource Group'
+
+  - script: |
+      terraform plan -out=tfplan
     displayName: 'Terraform Plan'
 
-  # Step 3: Terraform Apply (apply changes)
   - script: |
-      terraform apply -input=false -auto-approve tfplan
+      terraform apply -auto-approve tfplan
     displayName: 'Terraform Apply'
-
