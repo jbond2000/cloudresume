@@ -7,10 +7,10 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  ARM_CLIENT_ID: "d0abc8bf-92b5-4b7a-ae04-6a0625e55d36"   # Replace with actual client ID
-  ARM_CLIENT_SECRET: "eez8Q~wHBDUCc0LvFPo2lpFvfZQFPQcwuuTfyaR_"  # Replace with actual client secret
-  ARM_TENANT_ID: "ca249364-2247-4916-be5f-6878448ff851"   # Replace with actual tenant ID
-  ARM_SUBSCRIPTION_ID: "a67fa08c-8a71-4843-a6e9-1fbd1d8198b6"  # Replace with actual subscription ID
+  ARM_CLIENT_ID: "d0abc8bf-92b5-4b7a-ae04-6a0625e55d36"
+  ARM_CLIENT_SECRET: "eez8Q~wHBDUCc0LvFPo2lpFvfZQFPQcwuuTfyaR_"
+  ARM_TENANT_ID: "ca249364-2247-4916-be5f-6878448ff851"
+  ARM_SUBSCRIPTION_ID: "a67fa08c-8a71-4843-a6e9-1fbd1d8198b6"
 
 jobs:
 - job: terraform
@@ -35,11 +35,6 @@ jobs:
       az login --service-principal -u "$ARM_CLIENT_ID" -p "$ARM_CLIENT_SECRET" --tenant "$ARM_TENANT_ID"
       az account set --subscription "$ARM_SUBSCRIPTION_ID"
     displayName: 'Azure CLI Login'
-    env:
-      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      ARM_TENANT_ID: $(ARM_TENANT_ID)
-      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
   - script: |
       # Clean up any previous Terraform initialization to avoid conflicts
@@ -50,11 +45,6 @@ jobs:
       # Initialize Terraform with reconfiguration to ensure the backend is properly set up
       terraform init -reconfigure
     displayName: 'Terraform Init with Reconfigure'
-    env:
-      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      ARM_TENANT_ID: $(ARM_TENANT_ID)
-      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
   - script: |
       # Define resource variables inside the script block
@@ -83,7 +73,8 @@ jobs:
       fi
 
       # Import Action Group if it exists in Azure but not in Terraform
-      ACTION_GROUP_ID=$(az monitor action-group show --name "$ACTION_GROUP_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query id -o tsv 2>/dev/null | sed 's/microsoft.insights/Microsoft.Insights/g')
+      ACTION_GROUP_ID=$(az monitor action-group show --name "$ACTION_GROUP_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query id -o tsv 2>/dev/null)
+      ACTION_GROUP_ID=$(echo $ACTION_GROUP_ID | sed 's/microsoft.insights/Microsoft.Insights/g') # Correct namespace case
       if [ -n "$ACTION_GROUP_ID" ] && ! terraform state show azurerm_monitor_action_group.action_group > /dev/null 2>&1; then
         echo "Importing existing Action Group: $ACTION_GROUP_NAME"
         terraform import azurerm_monitor_action_group.action_group "$ACTION_GROUP_ID"
@@ -92,7 +83,7 @@ jobs:
       fi
 
       # Import Application Insights if it exists in Azure but not in Terraform
-      APP_INSIGHTS_ID=$(az resource show --name "$APP_INSIGHTS_NAME" --resource-group "$RESOURCE_GROUP_NAME" --namespace "Microsoft.Insights" --resource-type "components" --query id -o tsv 2>/dev/null sed 's/microsoft.insights/Microsoft.Insights/g')
+      APP_INSIGHTS_ID=$(az resource show --name "$APP_INSIGHTS_NAME" --resource-group "$RESOURCE_GROUP_NAME" --namespace "Microsoft.Insights" --resource-type "components" --query id -o tsv 2>/dev/null)
       if [ -n "$APP_INSIGHTS_ID" ] && ! terraform state show azurerm_application_insights.app_insights > /dev/null 2>&1; then
         echo "Importing existing Application Insights: $APP_INSIGHTS_NAME"
         terraform import azurerm_application_insights.app_insights "$APP_INSIGHTS_ID"
@@ -109,36 +100,3 @@ jobs:
         echo "App Service Plan already managed by Terraform or does not exist in Azure."
       fi
     displayName: 'Terraform Import Resources Dynamically'
-    env:
-      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      ARM_TENANT_ID: $(ARM_TENANT_ID)
-      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-
-  - script: |
-      # List the current state to confirm import
-      terraform state list
-    displayName: 'List Terraform State'
-    env:
-      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      ARM_TENANT_ID: $(ARM_TENANT_ID)
-      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-
-  - script: |
-      terraform plan -out=tfplan
-    displayName: 'Terraform Plan'
-    env:
-      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      ARM_TENANT_ID: $(ARM_TENANT_ID)
-      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-
-  - script: |
-      terraform apply -auto-approve tfplan
-    displayName: 'Terraform Apply'
-    env:
-      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      ARM_TENANT_ID: $(ARM_TENANT_ID)
-      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
