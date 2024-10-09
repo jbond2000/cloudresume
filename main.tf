@@ -85,8 +85,9 @@ resource "azurerm_function_app" "function_app" {
   version                    = "~4"
   https_only                 = true
 
+  # Explicitly set the LinuxFxVersion in the correct format
   site_config {
-    linux_fx_version = "Node|14"  # Set Node.js runtime version, adjust if needed
+    linux_fx_version = "NODE|14"  # Try using uppercase "NODE" instead of "Node"
   }
 
   identity {
@@ -97,9 +98,10 @@ resource "azurerm_function_app" "function_app" {
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.app_insights.connection_string,
     "APPINSIGHTS_INSTRUMENTATIONKEY"        = azurerm_application_insights.app_insights.instrumentation_key,
     "AzureWebJobsStorage"                   = azurerm_storage_account.storage_account.primary_connection_string,
-    "FUNCTIONS_WORKER_RUNTIME"              = "node"  # Specify the Functions runtime
+    "FUNCTIONS_WORKER_RUNTIME"              = "node"  # Specify the Functions runtime as Node.js
   })
 }
+
 
 # Create Proactive Detection Configurations for Application Insights
 resource "azurerm_application_insights_smart_detection_rule" "smart_detection" {
