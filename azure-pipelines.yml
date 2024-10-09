@@ -6,7 +6,6 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-# Defining variables directly to avoid cyclical reference issues
 variables:
   ARM_CLIENT_ID: "d0abc8bf-92b5-4b7a-ae04-6a0625e55d36"   # Replace with actual client ID
   ARM_CLIENT_SECRET: "eez8Q~wHBDUCc0LvFPo2lpFvfZQFPQcwuuTfyaR_"  # Replace with actual client secret
@@ -62,6 +61,8 @@ jobs:
       RESOURCE_GROUP_NAME="cloudresume"
       STORAGE_ACCOUNT_NAME="jbondcv"
       ACTION_GROUP_NAME="Application Insights Smart Detection"
+      APP_SERVICE_PLAN_NAME="ASP-cloudresume-baaa"
+      APP_INSIGHTS_NAME="jbondcounter"
 
       # Import the Resource Group if it exists in Azure but not in Terraform
       RG_ID=$(az group show --name "$RESOURCE_GROUP_NAME" --query id -o tsv 2>/dev/null)
@@ -88,6 +89,24 @@ jobs:
         terraform import azurerm_monitor_action_group.action_group "$ACTION_GROUP_ID"
       else
         echo "Action Group already managed by Terraform or does not exist in Azure."
+      fi
+
+      # Import Application Insights if it exists in Azure but not in Terraform
+      APP_INSIGHTS_ID=$(az resource show --name "$APP_INSIGHTS_NAME" --resource-group "$RESOURCE_GROUP_NAME" --namespace "Microsoft.Insights" --resource-type "components" --query id -o tsv 2>/dev/null)
+      if [ -n "$APP_INSIGHTS_ID" ] && ! terraform state show azurerm_application_insights.app_insights > /dev/null 2>&1; then
+        echo "Importing existing Application Insights: $APP_INSIGHTS_NAME"
+        terraform import azurerm_application_insights.app_insights "$APP_INSIGHTS_ID"
+      else
+        echo "Application Insights already managed by Terraform or does not exist in Azure."
+      fi
+
+      # Import App Service Plan if it exists in Azure but not in Terraform
+      APP_SERVICE_PLAN_ID=$(az appservice plan show --name "$APP_SERVICE_PLAN_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query id -o tsv 2>/dev/null)
+      if [ -n "$APP_SERVICE_PLAN_ID" ] && ! terraform state show azurerm_app_service_plan.app_service_plan > /dev/null 2>&1; then
+        echo "Importing existing App Service Plan: $APP_SERVICE_PLAN_NAME"
+        terraform import azurerm_app_service_plan.app_service_plan "$APP_SERVICE_PLAN_ID"
+      else
+        echo "App Service Plan already managed by Terraform or does not exist in Azure."
       fi
     displayName: 'Terraform Import Resources Dynamically'
     env:
