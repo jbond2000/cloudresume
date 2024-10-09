@@ -83,7 +83,7 @@ jobs:
       fi
 
       # Import Application Insights if it exists in Azure but not in Terraform
-      APP_INSIGHTS_ID=$(az resource show --name "$APP_INSIGHTS_NAME" --resource-group "$RESOURCE_GROUP_NAME" --namespace "Microsoft.Insights" --resource-type "components" --query id -o tsv 2>/dev/null | sed 's/microsoft.insights/Microsoft.Insights/g'))
+      APP_INSIGHTS_ID=$(az resource show --name "$APP_INSIGHTS_NAME" --resource-group "$RESOURCE_GROUP_NAME" --namespace "Microsoft.Insights" --resource-type "components" --query id -o tsv 2>/dev/null | sed 's/microsoft.insights/Microsoft.Insights/g')
       if [ -n "$APP_INSIGHTS_ID" ] && ! terraform state show azurerm_application_insights.app_insights > /dev/null 2>&1; then
         echo "Importing existing Application Insights: $APP_INSIGHTS_NAME"
         terraform import azurerm_application_insights.app_insights "$APP_INSIGHTS_ID"
