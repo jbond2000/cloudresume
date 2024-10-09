@@ -56,26 +56,14 @@ resource "azurerm_function_app" "function_app" {
   site_config {
     linux_fx_version = var.site_config_settings["linuxFxVersion"]
     always_on        = false
-    http20_enabled   = false
 
     cors {
       allowed_origins     = var.cors_allowed_origins
       support_credentials = var.cors_support_credentials
     }
 
-    ip_restrictions = [
-      {
-        name        = "Allow all"
-        ip_address  = "Any"
-        action      = "Allow"
-        priority    = 2147483647
-        description = "Allow all access"
-      }
-    ]
-
     ftps_state        = var.site_config_settings["ftpsState"]
     min_tls_version   = var.site_config_settings["minTlsVersion"]
-    scm_min_tls_version = var.site_config_settings["scmMinTlsVersion"]
   }
 
   identity {
