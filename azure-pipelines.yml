@@ -31,7 +31,6 @@ jobs:
 
       # Initialize Terraform with reconfiguration to ensure the backend is properly set up
       terraform init -reconfigure
-    displayName: 'Terraform Init with Reconfigure'
 
       # Define resource variables
       RESOURCE_GROUP_NAME="cloudresume"
