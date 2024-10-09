@@ -32,14 +32,14 @@ jobs:
       ACTION_GROUP_NAME="Application Insights Smart Detection"
       APP_SERVICE_PLAN_NAME="ASP-cloudresume-baaa"
 
-      # Import Resource Group if it exists in Azure but not in Terraform
-      RG_ID=$(az group show --name $RESOURCE_GROUP_NAME --query id -o tsv 2>/dev/null)
-      if [ -n "$RG_ID" ] && ! terraform state show azurerm_resource_group.rg > /dev/null 2>&1; then
-        echo "Importing existing Resource Group: $RESOURCE_GROUP_NAME"
-        terraform import azurerm_resource_group.rg "$RG_ID"
-      else
-        echo "Resource Group already managed by Terraform or does not exist in Azure."
-      fi
+    # Import the Resource Group if it exists in Azure but not in Terraform
+    RG_ID=$(az group show --name "cloudresume" --query id -o tsv 2>/dev/null)
+    if [ -n "$RG_ID" ] && ! terraform state show azurerm_resource_group.rg > /dev/null 2>&1; then
+      echo "Importing existing Resource Group: cloudresume"
+      terraform import azurerm_resource_group.rg "$RG_ID"
+    else
+      echo "Resource Group already managed by Terraform or does not exist in Azure."
+    fi
 
       # Import Storage Account if it exists in Azure but not in Terraform
       STORAGE_ID=$(az storage account show --name $STORAGE_ACCOUNT_NAME --resource-group $RESOURCE_GROUP_NAME --query id -o tsv 2>/dev/null)
