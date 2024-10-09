@@ -43,6 +43,11 @@ variable "storage_account_name" {
   default     = "jbondcv"
 }
 
+variable "test_storage_account_name" {
+  type = string
+  name = "test_storage_account"
+}
+
 variable "app_insights_name" {
   description = "The name of the Application Insights resource"
   type        = string

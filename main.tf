@@ -67,6 +67,13 @@ resource "azurerm_storage_account" "storage_account" {
   min_tls_version                  = "TLS1_2"
 }
 
+resource "azurerm_storage_account" "storage_account"{
+  name = var.test_storage_account_name
+  resource_group_name = azurerm
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}
+
 # Create App Service Plan
 resource "azurerm_app_service_plan" "app_service_plan" {
   name                = var.app_service_plan_name
