@@ -54,7 +54,7 @@ resource "azurerm_function_app" "function_app" {
   name                       = var.function_app_name
   resource_group_name        = azurerm_resource_group.rg.name
   location                   = var.location
-  app_service_plan_id        = var.app_service_plan_id
+  app_service_plan_id        = "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume/providers/Microsoft.Web/serverfarms/ASP-cloudresume-9bed" # Directly specifying the ID
   storage_account_name       = azurerm_storage_account.storage_account.name
   storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
   os_type                    = "linux"
