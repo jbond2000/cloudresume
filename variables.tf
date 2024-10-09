@@ -43,7 +43,7 @@ variable "storage_account_name" {
   default     = "jbondcv"
 }
 
-variable "test_storage_account_name" {
+variable "tstorage_account_name" {
   type = string
   default = "test_storage_account"
 }
