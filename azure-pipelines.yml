@@ -19,9 +19,15 @@ jobs:
   - checkout: self
 
   - script: |
-      # Log in to Azure CLI
-      az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
-      az account set --subscription $ARM_SUBSCRIPTION_ID
+      # Print environment variables to verify values
+      echo "ARM_CLIENT_ID: $ARM_CLIENT_ID"
+      echo "ARM_CLIENT_SECRET: $ARM_CLIENT_SECRET"
+      echo "ARM_TENANT_ID: $ARM_TENANT_ID"
+      echo "ARM_SUBSCRIPTION_ID: $ARM_SUBSCRIPTION_ID"
+      
+      # Log in to Azure CLI using the environment variables
+      az login --service-principal -u "$ARM_CLIENT_ID" -p "$ARM_CLIENT_SECRET" --tenant "$ARM_TENANT_ID"
+      az account set --subscription "$ARM_SUBSCRIPTION_ID"
     displayName: 'Azure CLI Login'
 
   - script: |
