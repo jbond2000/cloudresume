@@ -30,6 +30,14 @@ resource "azurerm_application_insights" "app_insights" {
   resource_group_name = azurerm_resource_group.rg.name
   application_type    = "web"
   retention_in_days   = 90
+
+    # Add the lifecycle block to ignore changes to workspace_id
+  lifecycle {
+    ignore_changes = [
+      # Ignore changes to workspace_id to prevent Terraform from attempting to manage it
+      workspace_id
+    ]
+  }
 }
 
 # Storage Account
