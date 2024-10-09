@@ -9,7 +9,7 @@ variable "client_secret" {
   description = "The Client Secret of the Service Principal"
   type        = string
   sensitive   = true
-  default     = "eez8Q~wHBUCc0LvFPo2lpFvFZQFPQcuwuTfyaR_"
+  default     = "eez8Q~wHBDUCc0LvFPo2lpFvfZQFPQcwuuTfyaR_"
 }
 
 variable "tenant_id" {
