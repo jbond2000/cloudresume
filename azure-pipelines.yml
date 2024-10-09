@@ -18,10 +18,10 @@ jobs:
   steps:
   - checkout: self
 
-  - script: |
-      # Log in to Azure CLI
-      az login --service-principal -u $(ARM_CLIENT_ID) -p $(ARM_CLIENT_SECRET) --tenant $(ARM_TENANT_ID)
-      az account set --subscription $(ARM_SUBSCRIPTION_ID)
+- script: |
+    # Log in to Azure CLI
+    az login --service-principal -u $(ARM_CLIENT_ID) -p $(ARM_CLIENT_SECRET) --tenant $(ARM_TENANT_ID)
+    az account set --subscription $(ARM_SUBSCRIPTION_ID)
 
   - script: |
       # Clean up any previous Terraform initialization to avoid conflicts
@@ -31,6 +31,7 @@ jobs:
 
       # Initialize Terraform with reconfiguration to ensure the backend is properly set up
       terraform init -reconfigure
+    displayName: 'Terraform Init with Reconfigure'
 
       # Define resource variables
       RESOURCE_GROUP_NAME="cloudresume"
@@ -73,7 +74,7 @@ jobs:
       else
         echo "App Service Plan already managed by Terraform or does not exist in Azure."
       fi
-    displayName: 'Terraform Import Resources Dynamically'
+  displayName: 'Terraform Import Resources Dynamically'
 
 
   - script: |
