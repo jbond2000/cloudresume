@@ -1,7 +1,7 @@
 provider "azurerm" {
   features {}
-
-  # Add the service principal authentication details here
+  
+  # Service principal authentication details
   client_id       = var.client_id
   client_secret   = var.client_secret
   tenant_id       = var.tenant_id
@@ -17,77 +17,46 @@ terraform {
   }
 }
 
-
-# Create Resource Group
+# Resource Group
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
   location = var.location
 }
 
-# Application Insights Resource
+# Application Insights
 resource "azurerm_application_insights" "app_insights" {
   name                = var.app_insights_name
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = azurerm_resource_group.rg.name
   application_type    = "web"
   retention_in_days   = 90
-
-  # Set the workspace_id to the actual value in Azure
-  workspace_id        = "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/DefaultResourceGroup-SUK/providers/Microsoft.OperationalInsights/workspaces/DefaultWorkspace-a67fa08c-8a71-4843-a6e9-1fbd1d8198b6-SUK"
 }
 
-
-# Create Storage Account
+# Storage Account
 resource "azurerm_storage_account" "storage_account" {
   name                     = var.storage_account_name
   resource_group_name      = azurerm_resource_group.rg.name
   location                 = var.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
-
-  allow_nested_items_to_be_public  = false
-  large_file_share_enabled         = true
-  access_tier                      = "Hot"
-  min_tls_version                  = "TLS1_2"
 }
 
-resource "azurerm_storage_account" "tstorage_account" {
-  name = var.tstorage_account_name
-  resource_group_name = azurerm_resource_group.rg.name
-  location = var.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-}
-
-# Create App Service Plan
-resource "azurerm_app_service_plan" "app_service_plan" {
-  name                = var.app_service_plan_name
-  location            = var.location
-  resource_group_name = azurerm_resource_group.rg.name
-  kind                = "functionapp"
-
-  sku {
-    tier     = "Dynamic"
-    size     = "Y1"
-    capacity = 0
-  }
-}
-
-# Create Function App with your desired settings
+# Function App
 resource "azurerm_function_app" "function_app" {
   name                       = var.function_app_name
   resource_group_name        = azurerm_resource_group.rg.name
   location                   = var.location
-  app_service_plan_id        = azurerm_app_service_plan.app_service_plan.id
+  app_service_plan_id        = var.app_service_plan_id
   storage_account_name       = azurerm_storage_account.storage_account.name
   storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
   os_type                    = "linux"
   version                    = "~4"
   https_only                 = true
 
-  # Explicitly set the LinuxFxVersion in the correct format
   site_config {
-    linux_fx_version = "NODE|14"  # Try using uppercase "NODE" instead of "Node"
+    linux_fx_version = var.site_config["linuxFxVersion"]
+    always_on        = var.site_config["alwaysOn"]
+    http20_enabled   = var.site_config["http20Enabled"]
   }
 
   identity {
@@ -96,20 +65,45 @@ resource "azurerm_function_app" "function_app" {
 
   app_settings = merge(var.function_app_settings, {
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = azurerm_application_insights.app_insights.connection_string,
-    "APPINSIGHTS_INSTRUMENTATIONKEY"        = azurerm_application_insights.app_insights.instrumentation_key,
-    "AzureWebJobsStorage"                   = azurerm_storage_account.storage_account.primary_connection_string,
-    "FUNCTIONS_WORKER_RUNTIME"              = "node"  # Specify the Functions runtime as Node.js
   })
+  
+  tags = {
+    "hidden-link: /app-insights-resource-id" = azurerm_application_insights.app_insights.id
+  }
 }
 
+# Hostname Bindings
+resource "azurerm_app_service_custom_hostname_binding" "hostname_binding" {
+  hostname            = "${var.function_app_name}.azurewebsites.net"
+  app_service_name    = azurerm_function_app.function_app.name
+  resource_group_name = azurerm_resource_group.rg.name
+}
 
-# Create Proactive Detection Configurations for Application Insights
-resource "azurerm_application_insights_smart_detection_rule" "smart_detection" {
-  count                        = length(["Slow page load time", "Slow server response time", "Long dependency duration", "Degradation in server response time", "Degradation in dependency duration", "Degradation in trace severity ratio", "Abnormal rise in exception volume", "Potential memory leak detected", "Potential security issue detected", "Abnormal rise in daily data volume"])
-  name                         = element(["Slow page load time", "Slow server response time", "Long dependency duration", "Degradation in server response time", "Degradation in dependency duration", "Degradation in trace severity ratio", "Abnormal rise in exception volume", "Potential memory leak detected", "Potential security issue detected", "Abnormal rise in daily data volume"], count.index)
-  application_insights_id      = azurerm_application_insights.app_insights.id
-  enabled                      = true
+# Disable FTP and SCM Access
+resource "azurerm_app_service_basic_auth" "basic_auth_ftp" {
+  name                = "${var.function_app_name}/ftp"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.location
 
-  # Corrected argument for email subscription owners
-  send_emails_to_subscription_owners = true
+  properties = {
+    "allow" = false
+  }
+
+  depends_on = [
+    azurerm_function_app.function_app
+  ]
+}
+
+resource "azurerm_app_service_basic_auth" "basic_auth_scm" {
+  name                = "${var.function_app_name}/scm"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.location
+
+  properties = {
+    "allow" = false
+  }
+
+  depends_on = [
+    azurerm_function_app.function_app
+  ]
 }

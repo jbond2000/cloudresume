@@ -24,7 +24,6 @@ variable "subscription_id" {
   default     = "a67fa08c-8a71-4843-a6e9-1fbd1d8198b6"
 }
 
-
 variable "resource_group_name" {
   description = "The name of the Azure Resource Group"
   type        = string
@@ -37,63 +36,60 @@ variable "location" {
   default     = "UK South"
 }
 
+variable "function_app_name" {
+  description = "The name of the Azure Function App"
+  type        = string
+  default     = "counter1"
+}
+
 variable "storage_account_name" {
   description = "The name of the Azure Storage Account"
   type        = string
   default     = "jbondcv"
 }
 
-variable "tstorage_account_name" {
-  type = string
-  default = "tstorage0101"
+variable "app_service_plan_id" {
+  description = "ID of the App Service Plan"
+  type        = string
+  default     = "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume/providers/Microsoft.Web/serverfarms/ASP-cloudresume-9bed"
 }
 
 variable "app_insights_name" {
   description = "The name of the Application Insights resource"
   type        = string
-  default     = "jbondcounter"
-}
-
-variable "function_app_name" {
-  description = "The name of the Azure Function App"
-  type        = string
-  default     = "jbondcounter"
-}
-
-variable "app_service_plan_name" {
-  description = "The name of the App Service Plan for the Function App"
-  type        = string
-  default     = "ASP-cloudresume-baaa"
-}
-
-variable "action_group_name" {
-  description = "The name of the action group for Application Insights"
-  type        = string
-  default     = "/subscriptions/A67FA08C-8A71-4843-A6E9-1FBD1D8198B6/resourceGroups/cloudresume/providers/Microsoft.Insights/actionGroups/Application Insights Smart Detection"
-}
-
-variable "workspace_resource_id" {
-  description = "The Resource ID of the Log Analytics workspace"
-  type        = string
-  default     = "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/DefaultResourceGroup-SUK/providers/Microsoft.OperationalInsights/workspaces/3d6f5dc6-0931-4a50-be72-b9931746b763"
+  default     = "counter1"
 }
 
 variable "function_app_settings" {
   description = "Configuration settings for the Azure Function App"
   type        = map(any)
   default = {
-    "httpsOnly"            = true
-    "dailyMemoryTimeQuota" = 0
-    "ftpsState"            = "FtpsOnly"
-    "alwaysOn"             = false
-    "publicNetworkAccess"  = "Enabled"
-    "minTlsVersion"        = "1.2"
-    "scmMinTlsVersion"     = "1.2"
-    "webSocketsEnabled"    = false
-    "scmIpSecurityRestrictionsUseMain" = false
-    "use32BitWorkerProcess" = true
-    "functionAppScaleLimit" = 200
-    "functionsRuntimeScaleMonitoringEnabled" = false
-    "minimumElasticInstanceCount" = 0
+    "FUNCTIONS_WORKER_RUNTIME"              = "node",
+    "WEBSITE_NODE_DEFAULT_VERSION"          = "20",
+    "WEBSITE_RUN_FROM_PACKAGE"              = "1",
+    "SCM_DO_BUILD_DURING_DEPLOYMENT"        = "1",
+    "APPLICATIONINSIGHTS_CONNECTION_STRING" = "",
+  }
+}
+
+variable "site_config" {
+  description = "Additional site configuration settings"
+  type        = map(any)
+  default = {
+    "numberOfWorkers"                  = 1,
+    "linuxFxVersion"                   = "Node|20",
+    "alwaysOn"                         = false,
+    "http20Enabled"                    = false,
+    "functionAppScaleLimit"            = 200,
+    "minimumElasticInstanceCount"      = 0,
+    "use32BitWorkerProcess"            = false,
+    "webSocketsEnabled"                = false,
+    "cors.allowedOrigins"              = ["https://portal.azure.com"],
+    "cors.supportCredentials"          = false,
+    "minTlsVersion"                    = "1.2",
+    "scmMinTlsVersion"                 = "1.2",
+    "ftpsState"                        = "FtpsOnly",
+    "publicNetworkAccess"              = "Enabled",
+    "scmIpSecurityRestrictionsUseMain" = false,
   }
 }
