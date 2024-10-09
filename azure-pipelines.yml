@@ -33,7 +33,7 @@ jobs:
       terraform init -reconfigure
   displayName: 'Terraform Init with Reconfigure'
 
-  - script: |
+- script: |
       # Define resource variables inside the script block
       RESOURCE_GROUP_NAME="cloudresume"
       STORAGE_ACCOUNT_NAME="jbondcv"
