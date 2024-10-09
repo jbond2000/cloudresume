@@ -14,20 +14,27 @@ variables:
 
 jobs:
 - job: terraform
-  displayName: 'Terraform Plan and Apply'
+  displayName: 'Terraform Dynamic Import, Plan, and Apply'
   steps:
   - checkout: self
 
   - script: |
+      # Print environment variables to verify values
+      echo "ARM_CLIENT_ID: $ARM_CLIENT_ID"
+      echo "ARM_CLIENT_SECRET: $ARM_CLIENT_SECRET"
+      echo "ARM_TENANT_ID: $ARM_TENANT_ID"
+      echo "ARM_SUBSCRIPTION_ID: $ARM_SUBSCRIPTION_ID"
+
+      # Check if the variables are empty or not
+      if [[ -z "$ARM_CLIENT_ID" || -z "$ARM_CLIENT_SECRET" || -z "$ARM_TENANT_ID" || -z "$ARM_SUBSCRIPTION_ID" ]]; then
+        echo "One or more required environment variables are missing. Please check the variable definitions in Azure DevOps."
+        exit 1
+      fi
+
       # Log in to Azure CLI using the environment variables
       az login --service-principal -u "$ARM_CLIENT_ID" -p "$ARM_CLIENT_SECRET" --tenant "$ARM_TENANT_ID"
       az account set --subscription "$ARM_SUBSCRIPTION_ID"
     displayName: 'Azure CLI Login'
-    env:
-      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      ARM_TENANT_ID: $(ARM_TENANT_ID)
-      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
   - script: |
       # Clean up any previous Terraform initialization to avoid conflicts
@@ -38,28 +45,58 @@ jobs:
       # Initialize Terraform with reconfiguration to ensure the backend is properly set up
       terraform init -reconfigure
     displayName: 'Terraform Init with Reconfigure'
-    env:
-      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      ARM_TENANT_ID: $(ARM_TENANT_ID)
-      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
   - script: |
-      # Plan the changes and save the plan to a file
-      terraform plan -out=tfplan
-    displayName: 'Terraform Plan'
-    env:
-      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      ARM_TENANT_ID: $(ARM_TENANT_ID)
-      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+      # Define resource variables inside the script block
+      RESOURCE_GROUP_NAME="cloudresume"
+      STORAGE_ACCOUNT_NAME="jbondcv"
+      ACTION_GROUP_NAME="Application Insights Smart Detection"
+      APP_SERVICE_PLAN_NAME="ASP-cloudresume-baaa"
+      APP_INSIGHTS_NAME="jbondcounter"
 
-  - script: |
-      # Apply the planned changes
-      terraform apply -auto-approve tfplan
-    displayName: 'Terraform Apply'
-    env:
-      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      ARM_TENANT_ID: $(ARM_TENANT_ID)
-      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+      # Import the Resource Group if it exists in Azure but not in Terraform
+      RG_ID=$(az group show --name "$RESOURCE_GROUP_NAME" --query id -o tsv 2>/dev/null)
+      if [ -n "$RG_ID" ] && ! terraform state show azurerm_resource_group.rg > /dev/null 2>&1; then
+        echo "Importing existing Resource Group: $RESOURCE_GROUP_NAME"
+        terraform import azurerm_resource_group.rg "$RG_ID"
+      else
+        echo "Resource Group already managed by Terraform or does not exist in Azure."
+      fi
+
+      # Import Storage Account if it exists in Azure but not in Terraform
+      STORAGE_ID=$(az storage account show --name "$STORAGE_ACCOUNT_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query id -o tsv 2>/dev/null)
+      if [ -n "$STORAGE_ID" ] && ! terraform state show azurerm_storage_account.storage_account > /dev/null 2>&1; then
+        echo "Importing existing Storage Account: $STORAGE_ACCOUNT_NAME"
+        terraform import azurerm_storage_account.storage_account "$STORAGE_ID"
+      else
+        echo "Storage Account already managed by Terraform or does not exist in Azure."
+      fi
+
+      # Import Action Group if it exists in Azure but not in Terraform
+      ACTION_GROUP_ID=$(az monitor action-group show --name "$ACTION_GROUP_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query id -o tsv 2>/dev/null)
+      ACTION_GROUP_ID=$(echo $ACTION_GROUP_ID | sed 's/microsoft.insights/Microsoft.Insights/g') # Correct namespace case
+      if [ -n "$ACTION_GROUP_ID" ] && ! terraform state show azurerm_monitor_action_group.action_group > /dev/null 2>&1; then
+        echo "Importing existing Action Group: $ACTION_GROUP_NAME"
+        terraform import azurerm_monitor_action_group.action_group "$ACTION_GROUP_ID"
+      else
+        echo "Action Group already managed by Terraform or does not exist in Azure."
+      fi
+
+      # Import Application Insights if it exists in Azure but not in Terraform
+      APP_INSIGHTS_ID=$(az resource show --name "$APP_INSIGHTS_NAME" --resource-group "$RESOURCE_GROUP_NAME" --namespace "Microsoft.Insights" --resource-type "components" --query id -o tsv 2>/dev/null)
+      if [ -n "$APP_INSIGHTS_ID" ] && ! terraform state show azurerm_application_insights.app_insights > /dev/null 2>&1; then
+        echo "Importing existing Application Insights: $APP_INSIGHTS_NAME"
+        terraform import azurerm_application_insights.app_insights "$APP_INSIGHTS_ID"
+      else
+        echo "Application Insights already managed by Terraform or does not exist in Azure."
+      fi
+
+      # Import App Service Plan if it exists in Azure but not in Terraform
+      APP_SERVICE_PLAN_ID="/subscriptions/$ARM_SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP_NAME/providers/Microsoft.Web/serverFarms/$APP_SERVICE_PLAN_NAME"
+      if [ -n "$APP_SERVICE_PLAN_ID" ] && ! terraform state show azurerm_app_service_plan.app_service_plan > /dev/null 2>&1; then
+        echo "Importing existing App Service Plan: $APP_SERVICE_PLAN_NAME"
+        terraform import azurerm_app_service_plan.app_service_plan "$APP_SERVICE_PLAN_ID"
+      else
+        echo "App Service Plan already managed by Terraform or does not exist in Azure."
+      fi
+    displayName: 'Terraform Import Resources Dynamically'
