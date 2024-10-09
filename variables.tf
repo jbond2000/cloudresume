@@ -87,7 +87,6 @@ variable "function_app_settings" {
     "ftpsState"            = "FtpsOnly"
     "alwaysOn"             = false
     "publicNetworkAccess"  = "Enabled"
-    "scmType"              = "None"
     "minTlsVersion"        = "1.2"
     "scmMinTlsVersion"     = "1.2"
     "webSocketsEnabled"    = false
