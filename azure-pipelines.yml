@@ -6,12 +6,14 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-# Defining the variables directly in the pipeline
+# Defining variables directly to avoid cyclical reference issues
+# You can remove this if they are correctly configured as pipeline variables
 variables:
-  ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-  ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-  ARM_TENANT_ID: $(ARM_TENANT_ID)
-  ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+  # Replace these with actual values or remove if using Azure DevOps variable group
+  ARM_CLIENT_ID: "your-client-id"   # Replace with actual client ID
+  ARM_CLIENT_SECRET: "your-client-secret"  # Replace with actual client secret
+  ARM_TENANT_ID: "your-tenant-id"   # Replace with actual tenant ID
+  ARM_SUBSCRIPTION_ID: "your-subscription-id"  # Replace with actual subscription ID
 
 jobs:
 - job: terraform
@@ -31,7 +33,7 @@ jobs:
         echo "One or more required environment variables are missing. Please check the variable definitions in Azure DevOps."
         exit 1
       fi
-      
+
       # Log in to Azure CLI using the environment variables
       az login --service-principal -u "$ARM_CLIENT_ID" -p "$ARM_CLIENT_SECRET" --tenant "$ARM_TENANT_ID"
       az account set --subscription "$ARM_SUBSCRIPTION_ID"
@@ -51,6 +53,11 @@ jobs:
       # Initialize Terraform with reconfiguration to ensure the backend is properly set up
       terraform init -reconfigure
     displayName: 'Terraform Init with Reconfigure'
+    env:
+      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      ARM_TENANT_ID: $(ARM_TENANT_ID)
+      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
   - script: |
       # Define resource variables inside the script block
@@ -105,11 +112,26 @@ jobs:
       # List the current state to confirm import
       terraform state list
     displayName: 'List Terraform State'
+    env:
+      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      ARM_TENANT_ID: $(ARM_TENANT_ID)
+      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
   - script: |
       terraform plan -out=tfplan
     displayName: 'Terraform Plan'
+    env:
+      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      ARM_TENANT_ID: $(ARM_TENANT_ID)
+      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
   - script: |
       terraform apply -auto-approve tfplan
     displayName: 'Terraform Apply'
+    env:
+      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      ARM_TENANT_ID: $(ARM_TENANT_ID)
+      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
