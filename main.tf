@@ -22,3 +22,12 @@ resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
   location = var.location
 }
+
+# Storage Account
+resource "azurerm_storage_account" "stg" {
+  name = var.storage_account_name
+  resource_group_name = var.resource_group_name
+  location = var.location
+  account_replication_type = "LRS"
+  account_tier = "Standard"
+}

@@ -36,3 +36,7 @@ variable "location" {
   default     = "UK South"
 }
 
+variable "storage_account_name" {
+  type = string
+  default = "tfstorage01"
+}
