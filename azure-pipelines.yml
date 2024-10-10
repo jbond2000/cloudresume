@@ -1,21 +1,4 @@
-trigger:
-  branches:
-    include:
-      - main
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-variables:
-  ARM_CLIENT_ID: "d0abc8bf-92b5-4b7a-ae04-6a0625e55d36"   # Replace with actual client ID
-  ARM_CLIENT_SECRET: "eez8Q~wHBDUCc0LvFPo2lpFvfZQFPQcwuuTfyaR_"  # Replace with actual client secret
-  ARM_TENANT_ID: "ca249364-2247-4916-be5f-6878448ff851"   # Replace with actual tenant ID
-  ARM_SUBSCRIPTION_ID: "a67fa08c-8a71-4843-a6e9-1fbd1d8198b6"  # Replace with actual subscription ID
-  RESOURCE_GROUP_NAME: "cloudresume"                      # Add resource group variable
-  FUNCTION_APP_NAME: "counter1"                           # Add function app name variable
-
 stages:
-# Stage 1: Terraform Plan
 - stage: Plan
   displayName: "Terraform Plan"
   jobs:
@@ -55,13 +38,19 @@ stages:
         artifactName: 'tfplan'
         publishLocation: 'pipeline'
 
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: 'terraform.lock.hcl'
+        artifactName: 'terraform-lock'
+        publishLocation: 'pipeline'
+
 - stage: Apply
   displayName: "Terraform Apply"
   dependsOn: Plan
   condition: succeeded()
   jobs:
   - deployment: terraformApply
-    environment: 'pre deployment' # This should match the environment name in Azure DevOps
+    environment: 'Production'  # Replace with your environment name
     strategy:
       runOnce:
         deploy:
@@ -73,7 +62,15 @@ stages:
               artifactName: 'tfplan'
               targetPath: './'
 
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: 'terraform-lock'
+              targetPath: './'
+
           - script: |
+              # Reinitialize Terraform using the same lock file
+              terraform init -reconfigure
+              
               # Apply the previously generated Terraform plan
               terraform apply -auto-approve tfplan
             displayName: 'Terraform Apply'
