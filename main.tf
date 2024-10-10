@@ -47,3 +47,14 @@ resource "azurerm_service_plan" "tfserviceplan" {
   sku_name = "Y1"
 }
 
+resource "azurerm_windows_function_app" "counter1" {
+  name =  "counter1"
+  resource_group_name = var.resource_group_name
+  location = var.location
+
+  storage_account_name = var.storage_account_name
+  storage_account_access_key = "YqJhZNwSgEZ0KSDNEUhlH5/WvaXdb03rvE2+m9oA/jppgRGYKH+P8jwM6epGk8hmlCaA0kDtKHHR+AStG0m0NA=="
+  service_plan_id = "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/terraform-rg/providers/Microsoft.Web/serverFarms/counter1-sp"
+
+  site_config {}
+}
