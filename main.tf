@@ -1,6 +1,6 @@
 provider "azurerm" {
   features {}
-  
+
   # Service principal authentication details
   client_id       = var.client_id
   client_secret   = var.client_secret
@@ -31,10 +31,8 @@ resource "azurerm_application_insights" "app_insights" {
   application_type    = "web"
   retention_in_days   = 90
 
-    # Add the lifecycle block to ignore changes to workspace_id
   lifecycle {
     ignore_changes = [
-      # Ignore changes to workspace_id to prevent Terraform from attempting to manage it
       workspace_id
     ]
   }
@@ -49,21 +47,61 @@ resource "azurerm_storage_account" "storage_account" {
   account_replication_type = "LRS"
 }
 
-# Function App
-resource "azurerm_windows_function_app" "function_app" {
+# App Service Plan for Windows
+resource "azurerm_app_service_plan" "app_service_plan" {
+  name                = "asp-windows-plan"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.rg.name
+  sku {
+    tier = "Standard"
+    size = "S1"
+  }
+  os_type = "Windows"
+}
+
+# Windows Function App
+resource "azurerm_function_app" "function_app" {
   name                       = var.function_app_name
-  resource_group_name        = azurerm_resource_group.rg.name
   location                   = var.location
-  service_plan_id        = "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume/providers/Microsoft.Web/serverFarms/ASP-cloudresume-9bed" # Directly specifying the ID
+  resource_group_name        = azurerm_resource_group.rg.name
+  service_plan_id            = azurerm_app_service_plan.app_service_plan.id
   storage_account_name       = azurerm_storage_account.storage_account.name
   storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
 
-  site_config {}
+  os_type = "Windows"
 
+  app_settings = merge(
+    var.function_app_settings,
+    {
+      "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING" = azurerm_storage_account.storage_account.primary_connection_string,
+      "WEBSITE_CONTENTSHARE"                     = var.function_app_name,
+      "APPINSIGHTS_INSTRUMENTATIONKEY"           = azurerm_application_insights.app_insights.instrumentation_key
+    }
+  )
+
+  site_config {
+    min_tls_version              = "1.2"
+    scm_min_tls_version          = "1.2"
+    ftps_state                   = "FtpsOnly"
+    always_on                    = true
+    http2_enabled                = true
   }
 
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+# Custom Hostname Binding
 resource "azurerm_app_service_custom_hostname_binding" "hostname_binding" {
   app_service_name    = var.function_app_name
   resource_group_name = var.resource_group_name
   hostname            = "counter1.azurewebsites.net"
+}
+
+# Storage Account Network Rules - Remove restrictions
+resource "azurerm_storage_account_network_rules" "network_rules" {
+  storage_account_id = azurerm_storage_account.storage_account.id
+
+  default_action = "Allow"
 }
