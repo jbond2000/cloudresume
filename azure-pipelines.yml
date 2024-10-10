@@ -36,16 +36,6 @@ jobs:
       ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
   - script: |
-      # Import the existing hostname binding into the Terraform state
-      terraform import azurerm_app_service_custom_hostname_binding.hostname_binding "/subscriptions/$(ARM_SUBSCRIPTION_ID)/resourceGroups/$(RESOURCE_GROUP_NAME)/providers/Microsoft.Web/sites/$(FUNCTION_APP_NAME)/hostNameBindings/counter1.azurewebsites.net"
-    displayName: 'Import Hostname Binding'
-    env:
-      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      ARM_TENANT_ID: $(ARM_TENANT_ID)
-      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-
-  - script: |
       # Generate and save the Terraform plan to a file
       terraform plan -out=tfplan
     displayName: 'Terraform Plan'
