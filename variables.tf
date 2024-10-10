@@ -72,17 +72,6 @@ variable "function_app_settings" {
   }
 }
 
-variable "site_config_settings" {
-  description = "Site configuration settings for the Function App"
-  type        = map(string)
-  default = {
-    "minTlsVersion"                    = "1.2",
-    "scmMinTlsVersion"                 = "1.2",
-    "ftpsState"                        = "FtpsOnly",
-    "publicNetworkAccess"              = "Enabled",
-    "scmIpSecurityRestrictionsUseMain" = "false",
-  }
-}
 
 variable "cors_allowed_origins" {
   description = "CORS allowed origins"
