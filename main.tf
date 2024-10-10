@@ -31,3 +31,19 @@ resource "azurerm_storage_account" "stg" {
   account_replication_type = "LRS"
   account_tier = "Standard"
 }
+
+# Blob Container 
+resource "azurerm_storage_container" "terraformblob" {
+  name = "tfblob"
+  storage_account_name = var.storage_account_name
+  container_access_type = "container"
+}
+
+resource "azurerm_service_plan" "tfserviceplan" {
+  name = "counter1-sp"
+  resource_group_name = var.resource_group_name
+  location = var.location
+  os_type = "Windows"
+  sku_name = "Y1"
+}
+
