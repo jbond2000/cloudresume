@@ -47,7 +47,7 @@ resource "azurerm_storage_account" "storage_account" {
   account_replication_type = "LRS"
 }
 
-# App Service Plan for Windows
+# App Service Plan
 resource "azurerm_app_service_plan" "app_service_plan" {
   name                = "asp-windows-plan"
   location            = var.location
@@ -56,7 +56,6 @@ resource "azurerm_app_service_plan" "app_service_plan" {
     tier = "Standard"
     size = "S1"
   }
-  os_type = "Windows"
 }
 
 # Windows Function App
@@ -64,11 +63,13 @@ resource "azurerm_function_app" "function_app" {
   name                       = var.function_app_name
   location                   = var.location
   resource_group_name        = azurerm_resource_group.rg.name
-  service_plan_id            = azurerm_app_service_plan.app_service_plan.id
+  app_service_plan_id        = azurerm_app_service_plan.app_service_plan.id
   storage_account_name       = azurerm_storage_account.storage_account.name
   storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
 
-  os_type = "Windows"
+  identity {
+    type = "SystemAssigned"
+  }
 
   app_settings = merge(
     var.function_app_settings,
@@ -80,15 +81,10 @@ resource "azurerm_function_app" "function_app" {
   )
 
   site_config {
-    min_tls_version              = "1.2"
-    scm_min_tls_version          = "1.2"
-    ftps_state                   = "FtpsOnly"
-    always_on                    = true
-    http2_enabled                = true
-  }
-
-  identity {
-    type = "SystemAssigned"
+    min_tls_version = "1.2"
+    ftps_state      = "FtpsOnly"
+    always_on       = true
+    http2_enabled   = true
   }
 }
 
