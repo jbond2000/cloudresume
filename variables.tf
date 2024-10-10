@@ -27,7 +27,7 @@ variable "subscription_id" {
 variable "resource_group_name" {
   description = "The name of the Azure Resource Group"
   type        = string
-  default     = "cloudresume"
+  default     = "terraform-rg"
 }
 
 variable "location" {
@@ -36,51 +36,3 @@ variable "location" {
   default     = "UK South"
 }
 
-variable "function_app_name" {
-  description = "The name of the Azure Function App"
-  type        = string
-  default     = "counter1"
-}
-
-variable "storage_account_name" {
-  description = "The name of the Azure Storage Account"
-  type        = string
-  default     = "jbondcv"
-}
-
-variable "app_service_plan_id" {
-  description = "ID of the App Service Plan"
-  type        = string
-  default     = "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/cloudresume/providers/Microsoft.Web/serverfarms/ASP-cloudresume-9bed"
-}
-
-variable "app_insights_name" {
-  description = "The name of the Application Insights resource"
-  type        = string
-  default     = "counter1"
-}
-
-variable "function_app_settings" {
-  description = "Configuration settings for the Azure Function App"
-  type        = map(string)
-  default = {
-    "FUNCTIONS_WORKER_RUNTIME"              = "node",
-    "WEBSITE_NODE_DEFAULT_VERSION"          = "20",
-    "WEBSITE_RUN_FROM_PACKAGE"              = "1",
-    "SCM_DO_BUILD_DURING_DEPLOYMENT"        = "1",
-    "APPLICATIONINSIGHTS_CONNECTION_STRING" = "",
-  }
-}
-
-
-variable "cors_allowed_origins" {
-  description = "CORS allowed origins"
-  type        = list(string)
-  default     = ["https://portal.azure.com"]
-}
-
-variable "cors_support_credentials" {
-  description = "CORS support credentials"
-  type        = bool
-  default     = false
-}
