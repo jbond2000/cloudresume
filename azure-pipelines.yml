@@ -32,6 +32,11 @@ stages:
         ARM_TENANT_ID: $(ARM_TENANT_ID)
         ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
+    - script: |
+        # Confirm the creation of the terraform.lock.hcl file
+        if [ -f "terraform.lock.hcl" ]; then echo "terraform.lock.hcl exists."; else echo "terraform.lock.hcl does not exist."; fi
+      displayName: 'Check if terraform.lock.hcl Exists'
+
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: 'tfplan'
@@ -40,7 +45,8 @@ stages:
 
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: 'terraform.lock.hcl'
+        # Ensure the path points to the correct directory where terraform.lock.hcl is located
+        targetPath: './terraform.lock.hcl' # Adjust path if necessary
         artifactName: 'terraform-lock'
         publishLocation: 'pipeline'
 
@@ -50,7 +56,7 @@ stages:
   condition: succeeded()
   jobs:
   - deployment: terraformApply
-    environment: 'pre deployment'  # Replace with your environment name
+    environment: 'pre deployment'  # Use the environment name exactly as configured in Azure DevOps
     strategy:
       runOnce:
         deploy:
