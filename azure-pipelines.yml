@@ -68,11 +68,6 @@ stages:
               artifactName: 'tfplan'
               targetPath: './'
 
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              artifactName: 'terraform-lock'
-              targetPath: './'
-
           - script: |
               # Reinitialize Terraform using the same lock file
               terraform init -reconfigure
