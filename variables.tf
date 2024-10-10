@@ -76,7 +76,6 @@ variable "site_config_settings" {
   description = "Site configuration settings for the Function App"
   type        = map(string)
   default = {
-    "linuxFxVersion"                   = "Node|20",
     "minTlsVersion"                    = "1.2",
     "scmMinTlsVersion"                 = "1.2",
     "ftpsState"                        = "FtpsOnly",
