@@ -55,35 +55,30 @@ stages:
         artifactName: 'tfplan'
         publishLocation: 'pipeline'
 
-# Stage 2: Terraform Apply (Requires Manual Approval)
 - stage: Apply
   displayName: "Terraform Apply"
   dependsOn: Plan
   condition: succeeded()
-
-  approval:
-    # Set the manual approval here
-    reviewers:
-      - name: 'jamie.bond@redcentricplc.com' # Replace with your reviewer email or Azure DevOps group
-        type: user
-
   jobs:
-  - job: terraformApply
-    displayName: 'Terraform Apply'
-    steps:
-    - checkout: self
-    
-    - task: DownloadPipelineArtifact@2
-      inputs:
-        artifactName: 'tfplan'
-        targetPath: './'
+  - deployment: terraformApply
+    environment: 'pre deployment' # This should match the environment name in Azure DevOps
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: 'tfplan'
+              targetPath: './'
 
-    - script: |
-        # Apply the previously generated Terraform plan
-        terraform apply -auto-approve tfplan
-      displayName: 'Terraform Apply'
-      env:
-        ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-        ARM_TENANT_ID: $(ARM_TENANT_ID)
-        ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+          - script: |
+              # Apply the previously generated Terraform plan
+              terraform apply -auto-approve tfplan
+            displayName: 'Terraform Apply'
+            env:
+              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+              ARM_TENANT_ID: $(ARM_TENANT_ID)
+              ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
