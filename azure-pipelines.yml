@@ -32,11 +32,6 @@ stages:
         ARM_TENANT_ID: $(ARM_TENANT_ID)
         ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
 
-    - script: |
-        # Confirm the creation of the terraform.lock.hcl file
-        if [ -f "terraform.lock.hcl" ]; then echo "terraform.lock.hcl exists."; else echo "terraform.lock.hcl does not exist."; fi
-      displayName: 'Check if terraform.lock.hcl Exists'
-
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: 'tfplan'
