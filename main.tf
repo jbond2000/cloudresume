@@ -58,6 +58,8 @@ resource "azurerm_windows_function_app" "function_app" {
   storage_account_name       = azurerm_storage_account.storage_account.name
   storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
 
+  site_config {}
+
   }
 
 resource "azurerm_app_service_custom_hostname_binding" "hostname_binding" {
