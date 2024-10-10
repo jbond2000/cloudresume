@@ -43,13 +43,6 @@ stages:
         artifactName: 'tfplan'
         publishLocation: 'pipeline'
 
-    - task: PublishPipelineArtifact@1
-      inputs:
-        # Ensure the path points to the correct directory where terraform.lock.hcl is located
-        targetPath: './terraform.lock.hcl' # Adjust path if necessary
-        artifactName: 'terraform-lock'
-        publishLocation: 'pipeline'
-
 - stage: Apply
   displayName: "Terraform Apply"
   dependsOn: Plan
