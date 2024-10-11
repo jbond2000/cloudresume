@@ -73,7 +73,7 @@ resource "azurerm_windows_function_app" "counter1" {
 
   site_config {
       cors {
-    allowed_origins = ["https://portal.azure.com"]
+    allowed_origins = ["https://portal.azure.com", "https://jbtfstorage01.blob.core.windows.net"]
     support_credentials = true
   }
   }
