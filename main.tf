@@ -30,6 +30,11 @@ resource "azurerm_storage_account" "stg" {
   location = var.location
   account_replication_type = "LRS"
   account_tier = "Standard"
+
+  static_website {
+    index_document = "cloudresumechallenge.html"
+
+  }
 }
 
 # Blob Container 
@@ -73,7 +78,7 @@ resource "azurerm_windows_function_app" "counter1" {
 
   site_config {
       cors {
-    allowed_origins = ["https://portal.azure.com", "https://jbtfstorage01.blob.core.windows.net"]
+    allowed_origins = ["https://portal.azure.com", "https://jbtfstorage01.blob.core.windows.net", "https://jbtfstorage01.z33.web.core.windows.net", "www.jbond.cloud", "https://www.jbond.cloud"]
     support_credentials = true
   }
   }
