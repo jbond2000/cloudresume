@@ -39,6 +39,12 @@ resource "azurerm_storage_container" "terraformblob" {
   container_access_type = "container"
 }
 
+#Table Storage
+resource "azurerm_storage_table" "cvcounter" {
+  name = "cvcounter"
+  storage_account_name = var.storage_account_name
+}
+
 resource "azurerm_service_plan" "tfserviceplan" {
   name = "counter1-sp"
   resource_group_name = var.resource_group_name
@@ -55,13 +61,18 @@ resource "azurerm_windows_function_app" "counter1" {
   app_settings = {
     "WEBSITE_RUN_FROM_PACKAGE" = "https://jbtfstorage01.blob.core.windows.net/tfblob/counter1.zip"
     "WEBSITE_NODE_DEFAULT_VERSION": "~20"
-    "FUNCTIONS_WORKER_RUNTIME" = "node"
-
   }
+
 
   storage_account_name = var.storage_account_name
   storage_account_access_key = "YqJhZNwSgEZ0KSDNEUhlH5/WvaXdb03rvE2+m9oA/jppgRGYKH+P8jwM6epGk8hmlCaA0kDtKHHR+AStG0m0NA=="
   service_plan_id = "/subscriptions/a67fa08c-8a71-4843-a6e9-1fbd1d8198b6/resourceGroups/terraform-rg/providers/Microsoft.Web/serverFarms/counter1-sp"
 
-  site_config {}
+  site_config {
+      cors {
+    allowed_origins = ["portal.azure.com"]
+    support_credentials = false
+  }
+  }
+
 }
