@@ -61,6 +61,9 @@ resource "azurerm_windows_function_app" "counter1" {
   app_settings = {
     "WEBSITE_RUN_FROM_PACKAGE" = "https://jbtfstorage01.blob.core.windows.net/tfblob/counter1.zip"
     "WEBSITE_NODE_DEFAULT_VERSION": "~20"
+    "FUNCTIONS_WORKER_RUNTIME" = "node"
+    "azuretableaccountkey" = "YqJhZNwSgEZ0KSDNEUhlH5/WvaXdb03rvE2+m9oA/jppgRGYKH+P8jwM6epGk8hmlCaA0kDtKHHR+AStG0m0NA=="
+    "azurewebjobstorageaccountname" = "jbtfstorage01"
   }
 
 
@@ -70,8 +73,8 @@ resource "azurerm_windows_function_app" "counter1" {
 
   site_config {
       cors {
-    allowed_origins = ["portal.azure.com"]
-    support_credentials = false
+    allowed_origins = ["https://portal.azure.com"]
+    support_credentials = true
   }
   }
 
