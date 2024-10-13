@@ -35,7 +35,13 @@ resource "azurerm_storage_account" "stg" {
     index_document = "cloudresumechallenge.html"
 
   }
+
+  custom_domain {
+    name = "www.jbond.cloud"
+    use_subdomain = false
+  }
 }
+
 
 # Blob Container 
 resource "azurerm_storage_container" "terraformblob" {
