@@ -90,3 +90,41 @@ resource "azurerm_windows_function_app" "counter1" {
   }
 
 }
+
+resource "azurerm_cdn_profile" "cdnjbondresume" {
+  name = "jbondresume"
+  resource_group_name = var.resource_group_name
+  location = "global"
+  sku = "Standard_Microsoft"
+}
+
+resource "azurerm_cdn_endpoint" "cdnendpoint" {
+  name = "jbondresume"
+  profile_name = "jbondresume"
+  location = "global"
+  resource_group_name = var.resource_group_name
+
+  origin {
+    name = "cv"
+    host_name = "jbtfstorage01.z33.web.core.windows.net"
+    }
+  origin {
+    name = "default-origin-b4c307f0"
+    host_name = "jbtfstorage01.blob.core.windows.net"
+  }
+  delivery_rule {
+      name = "HTTPRedirect"
+      order = 1
+
+      request_scheme_condition {
+        match_values = [
+          "HTTP",
+        ]
+      }
+
+      url_redirect_action {
+        protocol = "Https"
+        redirect_type = "Found"
+      }
+  }
+}
