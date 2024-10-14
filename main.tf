@@ -108,10 +108,6 @@ resource "azurerm_cdn_endpoint" "cdnendpoint" {
     name = "cv"
     host_name = "jbtfstorage01.z33.web.core.windows.net"
     }
-  origin {
-    name = "default-origin-b4c307f0"
-    host_name = "jbtfstorage01.blob.core.windows.net"
-  }
   delivery_rule {
       name = "HTTPRedirect"
       order = 1
