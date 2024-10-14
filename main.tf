@@ -223,6 +223,7 @@ JSON
 }
 
 
+
 resource "azurerm_cdn_endpoint" "cdnendpoint" {
   name                = "jbondresume"
   profile_name        = azurerm_cdn_profile.cdnjbondresume.name
