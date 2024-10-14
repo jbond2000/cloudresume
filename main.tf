@@ -105,9 +105,17 @@ resource "azurerm_cdn_endpoint" "cdnendpoint" {
   resource_group_name = var.resource_group_name
 
   origin {
-    name = "default-origin-b4c307f0"
+    name = "cv"
     host_name = "jbtfstorage01.z33.web.core.windows.net"
     }
+
+
+  lifecycle {
+    ignore_changes = [
+      origin  # Ignore changes to the 'origin' block
+    ]
+  }
+
   delivery_rule {
       name = "HTTPRedirect"
       order = 1
@@ -122,6 +130,8 @@ resource "azurerm_cdn_endpoint" "cdnendpoint" {
         protocol = "Https"
         redirect_type = "Found"
       }
+
+      
   }
 }
 
