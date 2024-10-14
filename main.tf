@@ -1,4 +1,5 @@
 provider "azurerm" {
+  version = ">= 4.0.0"
   features {}
 
   # Service principal authentication details
@@ -105,16 +106,9 @@ resource "azurerm_cdn_endpoint" "cdnendpoint" {
   resource_group_name = var.resource_group_name
 
   origin {
-    name = "cv"
+    name = "default-origin-b4c307f0"
     host_name = "jbtfstorage01.z33.web.core.windows.net"
     }
-
-
-  lifecycle {
-    ignore_changes = [
-      origin  # Ignore changes to the 'origin' block
-    ]
-  }
 
   delivery_rule {
       name = "HTTPRedirect"
@@ -133,6 +127,57 @@ resource "azurerm_cdn_endpoint" "cdnendpoint" {
 
       
   }
+}
+
+resource "azurerm_resource_group_template_deployment" "cdn_origin_group" {
+  name                = "cdn-origin-group-deployment"
+  resource_group_name = azurerm_resource_group.rg.name
+  deployment_mode     = "Incremental" # This can also be "Complete", depending on the behavior you want
+
+  template_content = <<JSON
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "cdnProfileName": {
+      "type": "string"
+    },
+    "cdnEndpointName": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Cdn/profiles/endpoints/originGroups",
+      "apiVersion": "2020-09-01",
+      "name": "[concat(parameters('cdnEndpointName'), '/originGroup1')]",
+      "properties": {
+        "origins": [
+          {
+            "id": "[concat(resourceId('Microsoft.Cdn/profiles/endpoints/origins', parameters('cdnProfileName'), parameters('cdnEndpointName'), 'origin1'))]"
+          }
+        ],
+        "healthProbeSettings": {
+          "probePath": "/",
+          "probeRequestType": "GET",
+          "probeProtocol": "Https",
+          "probeIntervalInSeconds": 120
+        }
+      }
+    }
+  ]
+}
+JSON
+
+  # Parameters that will be passed into the ARM template
+  parameters_content = jsonencode({
+    "cdnProfileName"  = {
+      "value" = azurerm_cdn_profile.cdnjbondresume.name
+    },
+    "cdnEndpointName" = {
+      "value" = azurerm_cdn_endpoint.cdnendpoint.name
+    }
+  })
 }
 
 
