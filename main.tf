@@ -112,7 +112,7 @@ resource "azurerm_resource_group_template_deployment" "cdn_endpoint_deployment" 
     {
       "type": "Microsoft.Cdn/profiles/endpoints",
       "apiVersion": "2020-09-01",
-      "name": "[parameters('cdnEndpointName')]",
+      "name": "[concat(parameters('cdnProfileName'), '/', parameters('cdnEndpointName'))]",  // Correctly matches profile and endpoint
       "location": "Global",
       "properties": {
         "hostName": "[concat(parameters('cdnEndpointName'), '.azureedge.net')]",
@@ -204,12 +204,15 @@ resource "azurerm_resource_group_template_deployment" "cdn_endpoint_deployment" 
     }
   ],
   "parameters": {
+    "cdnProfileName": {
+      "type": "string"
+    },
     "cdnEndpointName": {
-      "type": "string",
-      "defaultValue": "jbondresume"
+      "type": "string"
     }
   }
 }
+
 JSON
 
   parameters_content = jsonencode({
