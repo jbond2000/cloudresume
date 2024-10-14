@@ -105,7 +105,7 @@ resource "azurerm_cdn_endpoint" "cdnendpoint" {
   resource_group_name = var.resource_group_name
 
   origin {
-    name = "cv"
+    name = "default-origin-b4c307f0"
     host_name = "jbtfstorage01.z33.web.core.windows.net"
     }
   delivery_rule {
