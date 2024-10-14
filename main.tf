@@ -99,85 +99,153 @@ resource "azurerm_cdn_profile" "cdnjbondresume" {
   sku = "Standard_Microsoft"
 }
 
-resource "azurerm_cdn_endpoint" "cdnendpoint" {
-  name = "jbondresume"
-  profile_name = "jbondresume"
-  location = "global"
-  resource_group_name = var.resource_group_name
-
-  origin {
-    name = "default-origin-b4c307f0"
-    host_name = "jbtfstorage01.z33.web.core.windows.net"
-    }
-
-  delivery_rule {
-      name = "HTTPRedirect"
-      order = 1
-
-      request_scheme_condition {
-        match_values = [
-          "HTTP",
-        ]
-      }
-
-      url_redirect_action {
-        protocol = "Https"
-        redirect_type = "Found"
-      }
-
-      
-  }
-}
-
-resource "azurerm_resource_group_template_deployment" "cdn_origin_group" {
-  name                = "cdn-origin-group-deployment"
+resource "azurerm_resource_group_template_deployment" "cdn_endpoint_deployment" {
+  name                = "cdn-endpoint-deployment"
   resource_group_name = azurerm_resource_group.rg.name
-  deployment_mode     = "Incremental" # This can also be "Complete", depending on the behavior you want
+  deployment_mode     = "Incremental"
 
   template_content = <<JSON
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
-  "parameters": {
-    "cdnProfileName": {
-      "type": "string"
-    },
-    "cdnEndpointName": {
-      "type": "string"
-    }
-  },
   "resources": [
     {
-      "type": "Microsoft.Cdn/profiles/endpoints/originGroups",
+      "type": "Microsoft.Cdn/profiles/endpoints",
       "apiVersion": "2020-09-01",
-      "name": "[concat(parameters('cdnEndpointName'), '/originGroup1')]",
+      "name": "[parameters('cdnEndpointName')]",
+      "location": "Global",
       "properties": {
+        "hostName": "[concat(parameters('cdnEndpointName'), '.azureedge.net')]",
+        "originHostHeader": "jbtfstorage01.blob.core.windows.net",
+        "contentTypesToCompress": [
+          "application/eot",
+          "application/font",
+          "application/font-sfnt",
+          "application/javascript",
+          "application/json",
+          "application/opentype",
+          "application/otf",
+          "application/pkcs7-mime",
+          "application/truetype",
+          "application/ttf",
+          "application/vnd.ms-fontobject",
+          "application/xhtml+xml",
+          "application/xml",
+          "application/xml+rss",
+          "application/x-font-opentype",
+          "application/x-font-truetype",
+          "application/x-font-ttf",
+          "font/eot",
+          "font/ttf",
+          "font/otf",
+          "font/opentype",
+          "image/svg+xml",
+          "text/css",
+          "text/csv",
+          "text/html",
+          "text/javascript",
+          "text/plain",
+          "text/richtext",
+          "text/tab-separated-values",
+          "text/xml"
+        ],
+        "isCompressionEnabled": true,
+        "isHttpAllowed": true,
+        "isHttpsAllowed": true,
+        "queryStringCachingBehavior": "IgnoreQueryString",
         "origins": [
           {
-            "id": "[concat(resourceId('Microsoft.Cdn/profiles/endpoints/origins', parameters('cdnProfileName'), parameters('cdnEndpointName'), 'origin1'))]"
+            "name": "default-origin-b4c307f0",
+            "properties": {
+              "hostName": "jbtfstorage01.z33.web.core.windows.net",
+              "httpPort": 80,
+              "httpsPort": 443
+            }
           }
         ],
-        "healthProbeSettings": {
-          "probePath": "/",
-          "probeRequestType": "GET",
-          "probeProtocol": "Https",
-          "probeIntervalInSeconds": 120
+        "customDomains": [
+          {
+            "name": "www-jbond-cloud",
+            "properties": {
+              "hostName": "www.jbond.cloud"
+            }
+          }
+        ],
+        "deliveryPolicy": {
+          "description": "",
+          "rules": [
+            {
+              "name": "HTTPRedirect",
+              "order": 1,
+              "conditions": [
+                {
+                  "name": "RequestScheme",
+                  "parameters": {
+                    "matchValues": [
+                      "HTTP"
+                    ],
+                    "operator": "Equal"
+                  }
+                }
+              ],
+              "actions": [
+                {
+                  "name": "UrlRedirect",
+                  "parameters": {
+                    "redirectType": "Found",
+                    "destinationProtocol": "Https"
+                  }
+                }
+              ]
+            }
+          ]
         }
       }
     }
-  ]
+  ],
+  "parameters": {
+    "cdnEndpointName": {
+      "type": "string",
+      "defaultValue": "jbondresume"
+    }
+  }
 }
 JSON
 
-  # Parameters that will be passed into the ARM template
   parameters_content = jsonencode({
-    "cdnProfileName"  = {
-      "value" = azurerm_cdn_profile.cdnjbondresume.name
-    },
     "cdnEndpointName" = {
-      "value" = azurerm_cdn_endpoint.cdnendpoint.name
+      "value" = "jbondresume"
     }
   })
 }
 
+resource "azurerm_cdn_endpoint" "cdnendpoint" {
+  name                = "jbondresume"
+  profile_name        = azurerm_cdn_profile.cdnjbondresume.name
+  location            = "global"
+  resource_group_name = azurerm_resource_group.rg.name
 
+  origin {
+    name      = "cv"
+    host_name = "jbtfstorage01.z33.web.core.windows.net"
+  }
+
+  delivery_rule {
+    name  = "HTTPRedirect"
+    order = 1
+
+    request_scheme_condition {
+      match_values = ["HTTP"]
+    }
+
+    url_redirect_action {
+      protocol      = "Https"
+      redirect_type = "Found"
+    }
+  }
+
+  # Lifecycle block to ignore all changes to the CDN endpoint resource
+  lifecycle {
+    ignore_changes = all  # This tells Terraform to completely ignore any changes
+  }
+}
