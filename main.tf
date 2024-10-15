@@ -85,7 +85,7 @@ resource "azurerm_windows_function_app" "counter1" {
 
   site_config {
       cors {
-    allowed_origins = ["https://portal.azure.com", "https://jbtfstorage01.blob.core.windows.net", "https://jbtfstorage01.z33.web.core.windows.net", "www.jbond.cloud", "https://www.jbond.cloud"]
+    allowed_origins = ["https://portal.azure.com", "https://jbtfstorage01.blob.core.windows.net", "https://jbtfstorage01.z33.web.core.windows.net", "www.jbond.cloud", "https://www.jbond.cloud", "https://jbond.cloud"]
     support_credentials = true
   }
   }
@@ -98,131 +98,6 @@ resource "azurerm_cdn_profile" "cdnjbondresume" {
   location = "global"
   sku = "Standard_Microsoft"
 }
-
-resource "azurerm_resource_group_template_deployment" "cdn_endpoint_deployment" {
-  name                = "cdn-endpoint-deployment"
-  resource_group_name = azurerm_resource_group.rg.name
-  deployment_mode     = "Incremental"
-
-  template_content = <<JSON
-{
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "resources": [
-      {
-        "type": "Microsoft.Cdn/profiles/endpoints",
-        "apiVersion": "2020-09-01",
-        "name": "[concat(parameters('cdnProfileName'), '/', parameters('cdnEndpointName'))]",
-        "location": "Global",
-        "properties": {
-          "hostName": "[concat(parameters('cdnEndpointName'), '.azureedge.net')]",
-          "originHostHeader": "jbtfstorage01.blob.core.windows.net",
-          "contentTypesToCompress": [
-            "application/eot",
-            "application/font",
-            "application/font-sfnt",
-            "application/javascript",
-            "application/json",
-            "application/opentype",
-            "application/otf",
-            "application/pkcs7-mime",
-            "application/truetype",
-            "application/ttf",
-            "application/vnd.ms-fontobject",
-            "application/xhtml+xml",
-            "application/xml",
-            "application/xml+rss",
-            "application/x-font-opentype",
-            "application/x-font-truetype",
-            "application/x-font-ttf",
-            "font/eot",
-            "font/ttf",
-            "font/otf",
-            "font/opentype",
-            "image/svg+xml",
-            "text/css",
-            "text/csv",
-            "text/html",
-            "text/javascript",
-            "text/plain",
-            "text/richtext",
-            "text/tab-separated-values",
-            "text/xml"
-          ],
-          "isCompressionEnabled": true,
-          "isHttpAllowed": true,
-          "isHttpsAllowed": true,
-          "queryStringCachingBehavior": "IgnoreQueryString",
-          "origins": [
-            {
-              "name": "default-origin-b4c307f0",
-              "properties": {
-                "hostName": "jbtfstorage01.z33.web.core.windows.net",
-                "httpPort": 80,
-                "httpsPort": 443
-              }
-            }
-          ],
-          "customDomains": [
-            {
-              "name": "www-jbond-cloud",
-              "properties": {
-                "hostName": "www.jbond.cloud"
-              }
-            }
-          ],
-          "deliveryPolicy": {
-            "description": "",
-            "rules": [
-              {
-                "name": "HTTPRedirect",
-                "order": 1,
-                "conditions": [
-                  {
-                    "name": "RequestScheme",
-                    "parameters": {
-                      "matchValues": ["HTTP"],
-                      "operator": "Equal",
-                      "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleRequestSchemeConditionParameters"
-                    }
-                  }
-                ],
-                "actions": [
-                  {
-                    "name": "UrlRedirect",
-                    "parameters": {
-                      "redirectType": "Found",
-                      "destinationProtocol": "Https",
-                      "@odata.type": "#Microsoft.Azure.Cdn.Models.DeliveryRuleUrlRedirectActionParameters"
-                    }
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      }
-    ],
-    "parameters": {
-      "cdnProfileName": {
-        "type": "string",
-        "defaultValue": "jbondresume"
-      },
-      "cdnEndpointName": {
-        "type": "string",
-        "defaultValue": "jbondresume"
-      }
-    }
-  }
-JSON
-
-  parameters_content = jsonencode({
-    "cdnProfileName"  = { "value" = "jbondresume" }
-    "cdnEndpointName" = { "value" = "jbondresume" }
-  })
-}
-
-
 
 resource "azurerm_cdn_endpoint" "cdnendpoint" {
   name                = "jbondresume"
@@ -253,4 +128,9 @@ resource "azurerm_cdn_endpoint" "cdnendpoint" {
   lifecycle {
     ignore_changes = all  # This tells Terraform to completely ignore any changes
   }
+}
+
+resource "azurerm_dns_zone" "jbond_cloud" {
+  name = "jbond.cloud"
+  resource_group_name = var.resource_group_name
 }
