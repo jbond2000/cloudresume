@@ -252,11 +252,6 @@ resource "azurerm_key_vault_secret" "jbondcloud_cert" {
   value        = azurerm_key_vault_certificate.jbondcloud_cert.secret_id  # Use the secret backing the certificate
   key_vault_id = azurerm_key_vault.jbondtfcert.id
 
-  content_type    = "application/x-pkcs12"
-  expiration_date = "2025-10-14T23:59:59Z"
-  not_before_date = "2024-10-15T00:00:00Z"
-  tags            = {}
-
   lifecycle {
     ignore_changes = [
       "value",
