@@ -246,19 +246,6 @@ resource "azurerm_key_vault_certificate" "jbondcloud_cert" {
   }
 }
 
-  
-resource "azurerm_key_vault_secret" "jbondcloud_cert" {
-  name         = "jbondroot"
-  value        = azurerm_key_vault_certificate.jbondcloud_cert.secret_id  # Use the secret backing the certificate
-  key_vault_id = azurerm_key_vault.jbondtfcert.id
-
-  lifecycle {
-    ignore_changes = [
-      "value",
-    ]
-  }
-}
-
 
 
 # Key Vault
